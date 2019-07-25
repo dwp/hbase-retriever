@@ -14,7 +14,7 @@ jobs:
         name: install dependencies
         command: |
           mkdir artifacts
-          gradle build --stacktrace -Dhttp.proxyHost=dip-proxy.dmz.uc -Dhttp.proxyPort=3128 -Dhttps.proxyHost=dip-proxy.dmz.uc -Dhttps.proxyPort=3128
+          gradle build --stacktrace
           cp build/libs/HbaseRetriever*-uber.jar artifacts/
     - persist_to_workspace:
         root: artifacts
