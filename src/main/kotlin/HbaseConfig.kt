@@ -2,7 +2,8 @@ import org.apache.hadoop.conf.Configuration
 
 object HbaseConfig {
     val config = Configuration().apply {
-        set("hbase.zookeeper.znode.parent", getEnv("ZOOKEEPER_PARENT") ?: "/hbase")
+        // See also https://hbase.apache.org/book.html#hbase_default_configurations
+        set("zookeeper.znode.parent", getEnv("ZOOKEEPER_PARENT") ?: "/hbase")
         set("hbase.zookeeper.quorum", getEnv("ZOOKEEPER_QUORUM") ?: "zookeeper")
         setInt("hbase.zookeeper.port", getEnv("ZOOKEEPER_PORT")?.toIntOrNull() ?: 2181)
     }
