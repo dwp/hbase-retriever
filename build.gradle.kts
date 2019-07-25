@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "uk.org.dwp.dataworks"
-version = "1.0"
+version = "0.0.0"
 
 repositories {
     mavenCentral()
