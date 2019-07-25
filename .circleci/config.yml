@@ -19,7 +19,7 @@ jobs:
     - persist_to_workspace:
         root: artifacts
         paths:
-        - HbaseRetriever*-uber.zip
+        - HbaseRetriever*-uber.jar
   publish-github-release:
     docker:
     - image: cibuilds/github:0.10
