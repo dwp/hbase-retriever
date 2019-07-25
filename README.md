@@ -33,6 +33,7 @@ string.
 
 Configuration of the Lambda is done entirely via environment variables.
 
+* **ZOOKEEPER_PARENT** - set `hbase.zookeeper.parent` to hbase parent URI (default `/hbase`, aws `/hbase-unsecure`)
 * **ZOOKEEPER_QUORUM** - set `hbase.zookeeper.quorum` to a list of hosts (default `zookeeper`)
 * **ZOOKEEPER_PORT** - set `hbase.zookeeper.port` to an integer port (default `2181`)
 * **TABLE** - the fully qualified Hbase table to read from
