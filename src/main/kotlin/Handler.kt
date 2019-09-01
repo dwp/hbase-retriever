@@ -19,7 +19,10 @@ class Handler : RequestHandler<Request, ByteArray?> {
         Logger.getRootLogger().addAppender(consoleAppender)
     }
 
+    val logger = Logger.getLogger("Handler")
+
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
+        logger.info("Fetching data for $input in family ${HbaseConfig.family}")
         val topic = input.topic.toByteArray()
         val key = input.key.toByteArray()
         val timestamp = input.timestamp
