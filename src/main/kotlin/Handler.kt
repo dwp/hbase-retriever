@@ -22,11 +22,12 @@ class Handler : RequestHandler<Request, ByteArray?> {
     val logger = Logger.getLogger("Handler")
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
-        logger.info("Fetching data for $input in family ${HbaseConfig.family}")
         val topic = input.topic.toByteArray()
         val key = input.key.toByteArray()
         val timestamp = input.timestamp
         val family = HbaseConfig.family.toByteArray()
+
+        logger.info("Fetching data for topic $topic with key $key and timestamp $timestamp for family $family")
 
         // Connect to Hbase using configured values
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
