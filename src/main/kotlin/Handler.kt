@@ -27,7 +27,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val timestamp = input.timestamp
         val family = HbaseConfig.family.toByteArray()
 
-        logger.info("Fetching data for topic $topic with key $key and timestamp $timestamp for family $family")
+        logger.info("Fetching data for topic ${input.topic} with key ${input.key} and timestamp $timestamp for family ${HbaseConfig.family}")
 
         // Connect to Hbase using configured values
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
