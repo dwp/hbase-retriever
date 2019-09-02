@@ -29,20 +29,19 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val family = HbaseConfig.family.toByteArray()
 
         // Connect to Hbase using configured values
-        val connection = ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config))
+        ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
+            connection.getTable(TableName.valueOf(HbaseConfig.table)).use { table ->
+                val result = table.get(Get(key).apply {
+                    if (input.timestamp > 0) {
+                        setTimeStamp(timestamp)
+                    }
 
-        // Get the requested record with an optional version number
-        connection.getTable(TableName.valueOf(HbaseConfig.table)).use { table ->
-            val result = table.get(Get(key).apply {
-                if (input.timestamp > 0) {
-                    setTimeStamp(timestamp)
-                }
+                    addColumn(family, topic)
+                })
 
-                addColumn(family, topic)
-            })
-
-            // Return the value of the cell directly, parsed as a UTF-8 string
-            return result.getValue(family, topic)
+                // Return the value of the cell directly, parsed as a UTF-8 string
+                return result.getValue(family, topic)
+            }
         }
     }
 }
