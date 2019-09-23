@@ -24,3 +24,9 @@ hs_err_pid*
 
 *.iml
 .idea
+
+# Gradle
+/build
+/.idea
+/.gradle
+/.kotlintest
