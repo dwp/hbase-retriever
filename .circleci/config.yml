@@ -4,7 +4,7 @@
 #
 version: 2
 jobs:
-  build:
+  build-and-test:
     working_directory: ~/repo
     docker:
     - image: gradle:5.5.1
@@ -22,7 +22,7 @@ jobs:
           sed -i -e "s/version = \"0.0.0\"/version = \"$VERSION\"/" build.gradle.kts
 
           mkdir artifacts
-          gradle build --stacktrace
+          gradle build unit --stacktrace
           cp build/libs/HbaseRetriever*-uber.jar artifacts/
     - persist_to_workspace:
         root: artifacts
@@ -50,10 +50,10 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
-    - build
+    - build-and-test
     - publish-github-release:
         requires:
-        - build
+        - build-and-test
         filters:
           branches:
             only: master

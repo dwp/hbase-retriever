@@ -20,19 +20,22 @@ class Handler : RequestHandler<Request, ByteArray?> {
     }
 
     val logger = Logger.getLogger("Handler")
+    val keyGeneration = KeyGeneration()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
         val topic = input.topic.toByteArray()
-        val key = input.key.toByteArray()
         val timestamp = input.timestamp
         val family = HbaseConfig.family.toByteArray()
 
-        logger.info("Fetching data for topic ${input.topic} with key ${input.key} and timestamp $timestamp for family ${HbaseConfig.family}")
+        val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
+        logger.info("Generated key of ${formattedKey} from input key ${input.key}")
+
+        logger.info("Fetching data for topic ${input.topic} with key ${formattedKey} and timestamp $timestamp for family ${HbaseConfig.family}")
 
         // Connect to Hbase using configured values
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
             connection.getTable(TableName.valueOf(HbaseConfig.table)).use { table ->
-                val result = table.get(Get(key).apply {
+                val result = table.get(Get(formattedKey).apply {
                     if (input.timestamp > 0) {
                         setTimeStamp(timestamp)
                     }
