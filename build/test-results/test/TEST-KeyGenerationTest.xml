@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="KeyGenerationTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2019-09-23T08:46:46" hostname="steven-b.localdomain" time="0.055">
+  <properties/>
+  <testcase name="sorts json by key name" classname="KeyGenerationTest" time="0.054"/>
+  <testcase name="invalid nested input throws exception" classname="KeyGenerationTest" time="0.066"/>
+  <testcase name="generated checksums are four bytes" classname="KeyGenerationTest" time="0.041"/>
+  <testcase name="sorts json by key name case sensitively" classname="KeyGenerationTest" time="0.048"/>
+  <testcase name="can generate consistent checksums from json" classname="KeyGenerationTest" time="0.046"/>
+  <testcase name="valid nested input converts to json" classname="KeyGenerationTest" time="0.07"/>
+  <testcase name="valid input converts to json" classname="KeyGenerationTest" time="0.085"/>
+  <testcase name="checksums are different with different inputs" classname="KeyGenerationTest" time="0.048"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Sep 23, 2019 9:46:46 AM KeyGeneration convertToJson
+WARNING: Error while parsing message body of '{"testOne":' in to json: com.beust.klaxon.KlaxonException: Expected [, :, { or null, not 'EOF' at line 1
+   (internal error: "No processor found for: (PASSED_PAIR_KEY, EOF)"
+]]></system-err>
+</testsuite>
