@@ -70,9 +70,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 }
                 table.delete(deleteList)
             }
-        }
 
-        ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
             connection.getTable(TableName.valueOf(HbaseConfig.topicTable)).use { table ->
                 val delete = Delete(dataQualifier)
                 table.delete(delete)
