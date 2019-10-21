@@ -8,8 +8,9 @@ object HbaseConfig {
         setInt("hbase.zookeeper.port", getEnv("ZOOKEEPER_PORT")?.toIntOrNull() ?: 2181)
     }
 
-    val table = getEnv("TABLE") ?: "k2hb:ingest"
-    val family = getEnv("FAMILY") ?: "topic"
+    val dataTable = getEnv("TABLE") ?: "k2hb:ingest"
+    val dataFamily = getEnv("FAMILY") ?: "topic"
+    val topicTable = getEnv("TOPIC_TABLE") ?: "k2hb:ingest-topic"
 
     private fun getEnv(envVar: String): String? {
         val value = System.getenv(envVar)
