@@ -11,8 +11,6 @@ object HbaseConfig {
     val dataTable = getEnv("TABLE") ?: "k2hb:ingest"
     val dataFamily = getEnv("FAMILY") ?: "topic"
     val topicTable = getEnv("TOPIC_TABLE") ?: "k2hb:ingest-topic"
-    val topicFamily = getEnv("TOPIC_FAMILY") ?: "c"
-    val topicQualifier = getEnv("TOPIC_QUALIFIER") ?: "msg"
 
     private fun getEnv(envVar: String): String? {
         val value = System.getenv(envVar)
