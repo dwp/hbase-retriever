@@ -29,7 +29,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val timestamp = input.timestamp
         val isDeleteRequest = input.isDeleteRequest
         val family = HbaseConfig.dataFamily.toByteArray()
-        if (isDeleteRequest) {
+        if (isDeleteRequest == "true") {
             return deleteMessagesFromTopic(family, topic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
