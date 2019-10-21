@@ -24,12 +24,12 @@ class Handler : RequestHandler<Request, ByteArray?> {
     val logger = Logger.getLogger("Handler")
     val keyGeneration = KeyGeneration()
 
-    override fun handleRequest(input: Request, context: Context): ByteArray? {
+    override fun handleRequest(input: Request, context: Context?): ByteArray? {
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
+        val isDeleteRequest = input.isDeleteRequest
         val family = HbaseConfig.dataFamily.toByteArray()
-        val clientCustomValues = context.clientContext.custom
-        if (clientCustomValues["context"] == "delete") {
+        if (isDeleteRequest) {
             return deleteMessagesFromTopic(family, topic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
