@@ -25,7 +25,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
     val keyGeneration = KeyGeneration()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
-        logger.info("Input request received : $input")
+        logger.info("Input received for topic ${input.topic} with key ${input.key} and timestamp ${input.timestamp} for delete request ${input.deleteRequest}")
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
@@ -70,9 +70,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 }
                 table.delete(deleteList)
             }
-        }
 
-        ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
             connection.getTable(TableName.valueOf(HbaseConfig.topicTable)).use { table ->
                 val delete = Delete(dataQualifier)
                 table.delete(delete)
