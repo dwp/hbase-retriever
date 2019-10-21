@@ -1,2 +1,2 @@
-data class Request(var topic:String = "", var key: String = "", var timestamp:Long = 0, var isDeleteRequest:String = "")
+data class Request(var topic:String = "", var key: String = "", var timestamp:Long = 0, var deleteRequest:Boolean = false)
 

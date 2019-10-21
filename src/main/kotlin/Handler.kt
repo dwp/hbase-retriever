@@ -28,9 +28,9 @@ class Handler : RequestHandler<Request, ByteArray?> {
         logger.info("Input request received : $input")
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
-        val isDeleteRequest = input.isDeleteRequest
+        val isDeleteRequest = input.deleteRequest
         val family = HbaseConfig.dataFamily.toByteArray()
-        if (isDeleteRequest == "true") {
+        if (isDeleteRequest) {
             logger.info("Deleting messages from topic $topic")
             return deleteMessagesFromTopic(family, topic)
         } else {
