@@ -25,6 +25,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
     val keyGeneration = KeyGeneration()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
+        logger.info("Input request received : $input")
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
         val isDeleteRequest = input.isDeleteRequest
