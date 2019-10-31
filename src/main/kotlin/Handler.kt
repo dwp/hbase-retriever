@@ -35,9 +35,10 @@ class Handler : RequestHandler<Request, ByteArray?> {
             return deleteMessagesFromTopic(family, topic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
-            logger.info("Generated key of ${formattedKey} from input key ${input.key}")
+            val formattedKeyStr = String(formattedKey)
+            logger.info("Generated key of ${formattedKeyStr} from input key ${input.key}")
 
-            logger.info("Fetching data for topic ${input.topic} with key ${formattedKey} and timestamp $timestamp for family ${HbaseConfig.dataFamily}")
+            logger.info("Fetching data for topic ${input.topic} with key ${formattedKeyStr} and timestamp $timestamp for family ${HbaseConfig.dataFamily}")
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
