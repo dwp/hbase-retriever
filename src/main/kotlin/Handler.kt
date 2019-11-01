@@ -36,7 +36,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             logger.info("Generated key of ${formattedKey} from input key ${input.key}")
 
-            logger.info("Fetching data for topic ${input.topic} with key ${formattedKey} and timestamp $timestamp for family ${HbaseConfig.dataFamily}")
+            logger.info("Fetching data for topic ${input.topic} with key String : ${String(formattedKey)} byte array : ${formattedKey.contentToString()} and timestamp $timestamp for family ${HbaseConfig.dataFamily}")
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
