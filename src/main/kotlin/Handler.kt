@@ -31,12 +31,15 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val isDeleteRequest = input.deleteRequest
         val family = HbaseConfig.dataFamily.toByteArray()
         if (isDeleteRequest) {
-            logger.info("Deleting messages from topic $topic")
+            logger.info("Deleting messages from topic '${input.topic}'.")
             return deleteMessagesFromTopic(family, topic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
-            logger.info("Generated key of ${formattedKey.contentToString()} from input key ${input.key}")
-            logger.info("Fetching data for topic ${input.topic} with key : ${String(formattedKey)} and timestamp $timestamp for family ${HbaseConfig.dataFamily}")
+            val printableKey = keyGeneration.printableKey(formattedKey)
+
+            logger.info("""Getting '$printableKey' 
+                |column '${HbaseConfig.dataFamily}:${input.topic}',
+                |timestamp '$timestamp'""".trimMargin().replace("\n", " "))
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
@@ -75,7 +78,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 table.delete(delete)
             }
         }
-        return dataQualifier;
+        return dataQualifier
     }
 }
 

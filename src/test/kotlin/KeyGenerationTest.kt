@@ -6,11 +6,17 @@ import io.kotlintest.properties.assertAll
 import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
-import java.util.*
 
 
 class KeyGenerationTest : StringSpec({
     val keyGeneration = KeyGeneration()
+
+    "printable key renders nicely" {
+        val jsonString = "{\"testOne\":\"test1\",\n\"testTwo\":2}"
+        val key = keyGeneration.generateKey(jsonString.toByteArray())
+        val printable = keyGeneration.printableKey(key)
+        printable shouldBe """\xfb\xdb\xd9\xb1{"testOne":"test1","testTwo":2}"""
+    }
 
     "valid input converts to json" {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
