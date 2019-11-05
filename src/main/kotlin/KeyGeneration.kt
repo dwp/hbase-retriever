@@ -21,8 +21,7 @@ class KeyGeneration {
         try {
             val parser: Parser = Parser.default()
             val stringBuilder: StringBuilder = StringBuilder(String(body))
-            val json: JsonObject = parser.parse(stringBuilder) as JsonObject
-            return json
+            return parser.parse(stringBuilder) as JsonObject
         } catch (e: KlaxonException) {
             log.warning(
                 "Error while parsing message body of '%s' in to json: %s".format(
@@ -40,13 +39,20 @@ class KeyGeneration {
 
         checksum.update(bytes, 0, bytes.size)
 
-        return ByteBuffer.allocate(4).putInt(checksum.getValue().toInt()).array();
+        return ByteBuffer.allocate(4).putInt(checksum.getValue().toInt()).array()
     }
 
     fun sortJsonByKey(unsortedJson: JsonObject): String {
-        val sortedEntries = unsortedJson.toSortedMap(compareBy<String> { it })
-        val json: JsonObject = JsonObject(sortedEntries)
+        val sortedEntries = unsortedJson.toSortedMap(compareBy { it })
+        val json = JsonObject(sortedEntries)
         
         return json.toJsonString()
+    }
+
+    fun printableKey(key: ByteArray): String {
+        val hash = key.slice(IntRange(0, 3))
+        val hex = hash.map { String.format("\\x%02x", it) }.joinToString("")
+        val renderable = key.slice(IntRange(4, key.size - 1)).map{ it.toChar() }.joinToString("")
+        return "${hex}${renderable}"
     }
 }
