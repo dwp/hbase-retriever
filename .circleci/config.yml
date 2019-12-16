@@ -2,7 +2,7 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
-version: 2
+version: 2.1
 jobs:
   build-and-test:
     working_directory: ~/repo
@@ -28,6 +28,30 @@ jobs:
         root: artifacts
         paths:
         - HbaseRetriever*-uber.jar
+
+  snyk-pr:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - snyk/scan:
+          organization: dwp-dataworks
+          severity-threshold: high
+          target-file: build.gradle.kts
+          project: '${CIRCLE_PROJECT_REPONAME}/pr-kotlin'
+
+  snyk-master:
+    docker:
+      - image: circleci/openjdk:8-jdk
+    steps:
+      - checkout
+      - snyk/scan:
+          organization: dwp-dataworks
+          severity-threshold: high
+          target-file: build.gradle.kts
+          project: '${CIRCLE_PROJECT_REPONAME}/master-kotlin'
+
+
   publish-github-release:
     docker:
     - image: cibuilds/github:0.10
@@ -51,6 +75,18 @@ workflows:
   build-and-deploy:
     jobs:
     - build-and-test
+    - snyk-pr:
+        requires:
+          - build
+        filters:
+          branches:
+            ignore: master
+    - snyk-master:
+        requires:
+          - build
+        filters:
+          branches:
+            only: master
     - publish-github-release:
         requires:
         - build-and-test
