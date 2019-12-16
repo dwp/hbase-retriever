@@ -3,6 +3,10 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2.1
+
+orbs:
+  snyk: snyk/snyk@0.0.8
+  
 jobs:
   build-and-test:
     working_directory: ~/repo
