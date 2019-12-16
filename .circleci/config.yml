@@ -77,13 +77,13 @@ workflows:
     - build-and-test
     - snyk-pr:
         requires:
-          - build
+          - build-and-test
         filters:
           branches:
             ignore: master
     - snyk-master:
         requires:
-          - build
+          - build-and-test
         filters:
           branches:
             only: master
