@@ -20,6 +20,7 @@ dependencies {
     implementation("com.amazonaws", "aws-lambda-java-core", "1.2.0")
     implementation("org.apache.hbase", "hbase-client", "2.2.2")
     implementation("com.beust", "klaxon", "4.0.2")
+    implementation("com.google.protobuf", "protobuf-java", "3.4.0")
     testImplementation("io.kotlintest", "kotlintest-runner-junit5", "3.3.2")
 }
 
