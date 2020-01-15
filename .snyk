@@ -6,12 +6,4 @@ ignore:
     - '*':
         reason: removed, ticket raised for project remediation (DW-3155)
         expires: 2020-01-20T00:00:00.000Z
-  SNYK-JAVA-ORGAPACHEHADOOP-174573:
-    - '*':
-        reason: removed, ticket raised for project remediation (DW-3155)
-        expires: 2020-01-20T00:00:00.000Z
-  SNYK-JAVA-ORGAPACHEHADOOP-32047:
-    - '*':
-        reason: removed, ticket raised for project remediation (DW-3155)
-        expires: 2020-01-20T00:00:00.000Z
 patch: {}
