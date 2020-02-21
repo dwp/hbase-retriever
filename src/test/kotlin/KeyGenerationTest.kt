@@ -6,186 +6,212 @@ import io.kotlintest.properties.assertAll
 import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
+import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertThat
+import org.junit.Test
+import org.hamcrest.CoreMatchers.instanceOf;
 
 
-class KeyGenerationTest : StringSpec({
+class KeyGenerationTest {
     val keyGeneration = KeyGeneration()
 
-    "printable key renders nicely" {
+    @Test
+    fun printableKeyShouldRenderSuccessfully() {
         val jsonString = "{\"testOne\":\"test1\",\n\"testTwo\":2}"
         val key = keyGeneration.generateKey(jsonString.toByteArray())
         val printable = keyGeneration.printableKey(key)
-        printable shouldBe """\xfb\xdb\xd9\xb1{"testOne":"test1","testTwo":2}"""
+        assertEquals(printable, """\xfb\xdb\xd9\xb1{"testOne":"test1","testTwo":2}""")
     }
 
-    "valid input converts to json" {
+    @Test
+    fun validInputConvertsToJson() {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
 
-        json should beInstanceOf<JsonObject>()
-        json.string("testOne") shouldBe "test1"
-        json.int("testTwo") shouldBe 2
+        assertThat(json, instanceOf(JsonObject)
+        assertEquals(json.string("testOne"), "test1")
+        assertEquals(json.int("testTwo"), 2)
     }
 
-    "valid nested input converts to json" {
+    @Test
+    fun validNestedInputConvertsToJson() {
         val jsonString = "{\"testOne\":{\"testTwo\":2}}"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
         val jsonTwo: JsonObject = json.obj("testOne") as JsonObject
 
-        json should beInstanceOf<JsonObject>()
-        jsonTwo.int("testTwo") shouldBe 2
+        assertThat(json, instanceOf(JsonObject)
+        assertEquals(jsonTwo.int("testTwo"), 2)
     }
 
-    "invalid nested input throws exception" {
+    @Test
+    fun invaliedNestedInputThrowsException() {
         val jsonString = "{\"testOne\":"
 
         val exception = shouldThrow<IllegalArgumentException> {
             keyGeneration.convertToJson(jsonString.toByteArray())
         }
-        exception.message shouldBe "Cannot parse invalid JSON"
+        assertEquals(exception.message, "Cannot parse invalid JSON")
     }
 
-    "sorts json by key name" {
+    @Test
+    fun sortsJsonByKeyName() {
         val jsonStringUnsorted = "{\"testA\":\"test1\", \"testC\":2, \"testB\":true}"
         val jsonObjectUnsorted: JsonObject = keyGeneration.convertToJson(jsonStringUnsorted.toByteArray())
         val jsonStringSorted = "{\"testA\":\"test1\",\"testB\":true,\"testC\":2}"
 
         val sortedJson = keyGeneration.sortJsonByKey(jsonObjectUnsorted)
 
-        sortedJson shouldBe jsonStringSorted
+        assertEquals(sortedJson, jsonStringSorted)
     }
 
-    "sorts json by key name case sensitively" {
+    @Test
+    fun sortsJsonByKeyNameCaseSensitively() {
         val jsonStringUnsorted = "{\"testb\":true, \"testA\":\"test1\", \"testC\":2}"
         val jsonObjectUnsorted: JsonObject = keyGeneration.convertToJson(jsonStringUnsorted.toByteArray())
         val jsonStringSorted = "{\"testA\":\"test1\",\"testC\":2,\"testb\":true}"
 
         val sortedJson = keyGeneration.sortJsonByKey(jsonObjectUnsorted)
 
-        sortedJson shouldBe jsonStringSorted
+        assertEquals(sortedJson, jsonStringSorted)
     }
 
-    "checksums are different with different inputs" {
+    @Test
+    fun checksumsAreDifferentWithDifferentInputs() {
         val jsonStringOne = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val jsonStringTwo = "{\"testOne\":\"test2\", \"testTwo\":2}"
         val checksum = keyGeneration.generateFourByteChecksum(jsonStringOne)
         val checksumTwo = keyGeneration.generateFourByteChecksum(jsonStringTwo)
 
-        checksum shouldNotBe checksumTwo
+        assertNotEquals(checksum, checksumTwo)
     }
 
-    "can generate consistent checksums from json" {
+    @Test
+    fun canGenerateConsistentChecksumsFromJson() {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
 
-        checksumOne shouldBe checksumTwo
+        assertEquals(checksumOne, checksumTwo)
     }
 
-    "generated checksums are four bytes" {
+    @Test
+    fun generatedChecksumsAreFourBytes() {
         assertAll { input: String ->
             val checksum = keyGeneration.generateFourByteChecksum(input)
-            checksum.size shouldBe 4
+            assertEquals(checksum.size, 4)
         }
     }
 
-    "generated keys are consistent for identical inputs" {
+    @Test
+    fun generatedKeysAreConsistentForIdenticalInputs() {
         val json = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(json)
         val keyTwo: ByteArray = keyGeneration.generateKey(json)
 
-        keyOne.contentEquals(keyTwo) shouldBe true
+        assertTrue(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys are different for different inputs" {
+    @Test
+    fun generatedKeysAreDifferentForDifferentInputs() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test1\", \"testTwo\":3}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys are consistent for identical inputs regardless of order" {
+    @Test
+    fun generatedKeysAreConsistentForIdenticalInputsRegardlessOfOrder() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{\"testTwo\":2, \"testOne\":\"test1\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe true
+        assertTrue(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys are consistent for identical inputs regardless of whitespace" {
+    @Test
+    fun generatedKeysAreConsistentForIdenticalInputsRegardlessOfWhitespace() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{    \"testOne\":              \"test1\",            \"testTwo\":  2}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe true
+        assertTrue(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys are consistent for identical inputs regardless of order and whitespace" {
+    @Test
+    fun generatedKeysAreConsistentForIdenticalInputsRegardlessOfOrderAndWhitespace() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{    \"testTwo\":              2,            \"testOne\":  \"test1\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe true
+        assertTrue(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys will vary given values with different whitespace" {
+    @Test
+    fun generatedKeysWillVaryGivenValuesWithDifferentWhitespace() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test 1\", \"testTwo\":2}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys will vary given values that are string and int in each input" {
+    @Test
+    fun generatedKeysWillVaryGivenValuesThatAreStringAndIntInEachInput() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test1\", \"testTwo\":\"2\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys will vary given values that are string and float in each input" {
+    @Test
+    fun generatedKeysWillVaryGivenValuesThatAreStringAndFloatInEachInput() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2.0}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test1\", \"testTwo\":\"2.0\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys will vary given values that are string and boolean in each input" {
+    @Test
+    fun generatedKeysWillVaryGivenValuesThatAreStringAndBooleanInEachInput() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":false}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test1\", \"testTwo\":\"false\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
 
-    "generated keys will vary given values that are string and null in each input" {
+    @Test
+    fun generatedKeysWillVaryGivenValuesThatAreStringAndNullInEachInput() {
         val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":null}".toByteArray()
         val jsonTwo = "{\"testOne\":\"test1\", \"testTwo\":\"null\"}".toByteArray()
         
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        keyOne.contentEquals(keyTwo) shouldBe false
+        assertFalse(keyOne.contentEquals(keyTwo))
     }
-})
+}

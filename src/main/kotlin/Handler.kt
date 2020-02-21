@@ -29,6 +29,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
+        val useTablePerTopic = input.useTablePerTopic
         val family = HbaseConfig.dataFamily.toByteArray()
         if (isDeleteRequest) {
             logger.info("Deleting messages from topic '${input.topic}'.")
@@ -55,6 +56,21 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 }
             }
         }
+    }
+
+    fun getQualifiedTableName(topic: String, useTablePerTopic: Boolean): String {
+        if (!useTablePerTopic) {
+            return HbaseConfig.dataTable
+        }
+
+        val matcher = textUtils.topicNameTableMatcher(topicName)
+            if (matcher != null) {
+                val namespace = matcher.groupValues[1]
+                val tableName = matcher.groupValues[2]
+                val qualifiedTableName = "$namespace:$tableName".replace("-", "_")
+                val table = connection.getTable(TableName.valueOf(qualifiedTableName))
+                scanner = table.getScanner(scan())
+            }
     }
 
     fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray): ByteArray? {
