@@ -71,6 +71,8 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 val table = connection.getTable(TableName.valueOf(qualifiedTableName))
                 scanner = table.getScanner(scan())
             }
+        
+        return "HI"
     }
 
     fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray): ByteArray? {
