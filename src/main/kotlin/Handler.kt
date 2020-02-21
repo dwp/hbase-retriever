@@ -10,6 +10,7 @@ import org.apache.log4j.ConsoleAppender
 import org.apache.log4j.Level
 import org.apache.log4j.Logger
 import org.apache.log4j.PatternLayout
+import app.utils.TableNameUtil
 
 @Suppress("unused")
 class Handler : RequestHandler<Request, ByteArray?> {
@@ -21,18 +22,21 @@ class Handler : RequestHandler<Request, ByteArray?> {
         Logger.getRootLogger().addAppender(consoleAppender)
     }
 
-    val logger = Logger.getLogger("Handler")
-    val keyGeneration = KeyGeneration()
+    private val logger = Logger.getLogger("Handler")
+    private val keyGeneration = KeyGeneration()
+    private val tableNameUtil = TableNameUtil()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
         logger.info("Input received for topic ${input.topic} with key ${input.key} and timestamp ${input.timestamp} for delete request ${input.deleteRequest}")
         val topic = input.topic.toByteArray()
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
+        val useTablePerTopic = input.useTablePerTopic
         val family = HbaseConfig.dataFamily.toByteArray()
+        val tableName = tableNameUtil.getQualifiedTableName(input.topic, useTablePerTopic)
         if (isDeleteRequest) {
             logger.info("Deleting messages from topic '${input.topic}'.")
-            return deleteMessagesFromTopic(family, topic)
+            return deleteMessagesFromTopic(family, topic, tableName)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
@@ -43,7 +47,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
-                connection.getTable(TableName.valueOf(HbaseConfig.dataTable)).use { table ->
+                connection.getTable(TableName.valueOf(tableName)).use { table ->
                     val result = table.get(Get(formattedKey).apply {
                         if (input.timestamp > 0) {
                             setTimeStamp(timestamp)
@@ -57,10 +61,9 @@ class Handler : RequestHandler<Request, ByteArray?> {
         }
     }
 
-    fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray): ByteArray? {
-
+    fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String): ByteArray? {
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
-            connection.getTable(TableName.valueOf(HbaseConfig.dataTable)).use { table ->
+            connection.getTable(TableName.valueOf(tableName)).use { table ->
                 val deleteList = mutableListOf<Delete>()
                 val scan = Scan()
                 val scanner = table.getScanner(scan)
@@ -81,5 +84,3 @@ class Handler : RequestHandler<Request, ByteArray?> {
         return dataQualifier
     }
 }
-
-
