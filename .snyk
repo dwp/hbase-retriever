@@ -5,5 +5,5 @@ ignore:
   SNYK-JAVA-COMGOOGLEPROTOBUF-173761:
     - '*':
         reason: removed, ticket raised for project remediation (DW-3155)
-        expires: 2020-01-20T00:00:00.000Z
+        expires: 2020-03-20T00:00:00.000Z
 patch: {}
