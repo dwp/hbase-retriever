@@ -31,7 +31,7 @@ class KeyGenerationTest {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
 
-        assertThat(json, instanceOf(JsonObject)
+        assertThat(json, instanceOf(JsonObject::class.java))
         assertEquals(json.string("testOne"), "test1")
         assertEquals(json.int("testTwo"), 2)
     }
@@ -42,7 +42,7 @@ class KeyGenerationTest {
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
         val jsonTwo: JsonObject = json.obj("testOne") as JsonObject
 
-        assertThat(json, instanceOf(JsonObject)
+        assertThat(json, instanceOf(JsonObject::class.java))
         assertEquals(jsonTwo.int("testTwo"), 2)
     }
 
