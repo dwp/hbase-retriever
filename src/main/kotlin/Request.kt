@@ -3,4 +3,5 @@ class Request {
     var key: String = ""
     var timestamp: Long = 0
     var deleteRequest: Boolean = false
+    var useTablePerTopic: Boolean = false
 }
