@@ -27,22 +27,24 @@ class Handler : RequestHandler<Request, ByteArray?> {
     private val tableNameUtil = TableNameUtil()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
-        logger.info("Input received for topic ${input.topic} with key ${input.key} and timestamp ${input.timestamp} for delete request ${input.deleteRequest}")
-        val topic = input.topic.toByteArray()
+        logger.info("Input received for topic '${input.topic}' with key '${input.key}' and timestamp '${input.timestamp}' for delete request '${input.deleteRequest}' and table per topic setting of '${input.useTablePerTopic}'")
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
         val useTablePerTopic = input.useTablePerTopic
-        val family = HbaseConfig.dataFamily.toByteArray()
+        val family = (if (useTablePerTopic) "cf" else HbaseConfig.dataFamily).toByteArray()
+        val column = (if (useTablePerTopic) "record" else input.topic).toByteArray()
         val tableName = tableNameUtil.getQualifiedTableName(input.topic, useTablePerTopic)
         if (isDeleteRequest) {
-            logger.info("Deleting messages from topic '${input.topic}'.")
-            return deleteMessagesFromTopic(family, topic, tableName)
+            logger.info("""Deleting messages from column '${family}:${column}',
+                |table '${tableName}'""".trimMargin().replace("\n", " "))
+            return deleteMessagesFromTopic(family, column, tableName)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
 
             logger.info("""Getting '$printableKey' 
-                |column '${HbaseConfig.dataFamily}:${input.topic}',
+                |column '${family}:${column}',
+                |table '${tableName}',
                 |timestamp '$timestamp'""".trimMargin().replace("\n", " "))
 
             // Connect to Hbase using configured values
@@ -52,10 +54,10 @@ class Handler : RequestHandler<Request, ByteArray?> {
                         if (input.timestamp > 0) {
                             setTimeStamp(timestamp)
                         }
-                        addColumn(family, topic)
+                        addColumn(family, column)
                     })
                     // Return the value of the cell directly, parsed as a UTF-8 string
-                    return result.getValue(family, topic)
+                    return result.getValue(family, column)
                 }
             }
         }
