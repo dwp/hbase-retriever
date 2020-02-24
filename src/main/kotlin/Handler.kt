@@ -37,7 +37,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
         if (isDeleteRequest) {
             logger.info("""Deleting messages from column '${family}:${column}',
                 |table '${tableName}'""".trimMargin().replace("\n", " "))
-            return deleteMessagesFromTopic(family, column, tableName)
+            return deleteMessagesFromTopic(family, column, tableName, input.useTablePerTopic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
@@ -63,24 +63,33 @@ class Handler : RequestHandler<Request, ByteArray?> {
         }
     }
 
-    fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String): ByteArray? {
+    fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, useTablePerTopic: Boolean): ByteArray? {
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
-            connection.getTable(TableName.valueOf(tableName)).use { table ->
-                val deleteList = mutableListOf<Delete>()
-                val scan = Scan()
-                val scanner = table.getScanner(scan)
-                scanner.forEach { result ->
-                    val rowKey = result.row
-                    // Deletes all versions of a given family and qualifier for a given row key
-                    val delete = Delete(rowKey).addColumns(dataFamily, dataQualifier)
-                    deleteList.add(delete)
+            if (useTablePerTopic) {
+                with (TableName.valueOf(tableName)) {
+                    connection.admin.disableTable(this)
+                    connection.admin.deleteTable(this)
                 }
-                table.delete(deleteList)
             }
+            else {
+                connection.getTable(TableName.valueOf(tableName)).use { table ->
+                    val deleteList = mutableListOf<Delete>()
+                    val scan = Scan()
+                    val scanner = table.getScanner(scan)
+                    scanner.forEach { result ->
+                        val rowKey = result.row
+                        // Deletes all versions of a given family and qualifier for a given row key
+                        val delete = Delete(rowKey).addColumns(dataFamily, dataQualifier)
+                        deleteList.add(delete)
+                    }
+                    table.delete(deleteList)
+                }
 
-            connection.getTable(TableName.valueOf(HbaseConfig.topicTable)).use { table ->
-                val delete = Delete(dataQualifier)
-                table.delete(delete)
+                connection.getTable(TableName.valueOf(HbaseConfig.topicTable)).use { table ->
+                    val delete = Delete(dataQualifier)
+                    table.delete(delete)
+                }
+
             }
         }
         return dataQualifier
