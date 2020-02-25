@@ -69,7 +69,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
             }
         }
 
-        return
+        return null
     }
 
     fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, useTablePerTopic: Boolean): ByteArray? {
