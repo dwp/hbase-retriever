@@ -49,15 +49,19 @@ class Handler : RequestHandler<Request, ByteArray?> {
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
-                connection.getTable(TableName.valueOf(tableName)).use { table ->
-                    val result = table.get(Get(formattedKey).apply {
-                        if (input.timestamp > 0) {
-                            setTimeStamp(timestamp)
+                with (TableName.valueOf(tableName)) {
+                    if (connection.admin.tableExists(this)) {
+                        connection.getTable(this).use { table ->
+                            val result = table.get(Get(formattedKey).apply {
+                                if (input.timestamp > 0) {
+                                    setTimeStamp(timestamp)
+                                }
+                                addColumn(family, column)
+                            })
+                            // Return the value of the cell directly, parsed as a UTF-8 string
+                            return result.getValue(family, column)
                         }
-                        addColumn(family, column)
-                    })
-                    // Return the value of the cell directly, parsed as a UTF-8 string
-                    return result.getValue(family, column)
+                    }
                 }
             }
         }
