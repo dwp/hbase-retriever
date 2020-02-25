@@ -31,13 +31,13 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
         val useTablePerTopic = input.useTablePerTopic
-        val family = (if (useTablePerTopic) "cf" else HbaseConfig.dataFamily).toByteArray()
-        val column = (if (useTablePerTopic) "record" else input.topic).toByteArray()
+        val family = (if (useTablePerTopic) "cf" else HbaseConfig.dataFamily)
+        val column = (if (useTablePerTopic) "record" else input.topic)
         val tableName = tableNameUtil.getQualifiedTableName(input.topic, useTablePerTopic)
         if (isDeleteRequest) {
             logger.info("""Deleting messages from column '${family}:${column}',
                 |table '${tableName}'""".trimMargin().replace("\n", " "))
-            return deleteMessagesFromTopic(family, column, tableName, input.useTablePerTopic)
+            return deleteMessagesFromTopic(family.toByteArray(), column.toByteArray(), tableName, input.useTablePerTopic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
@@ -56,15 +56,20 @@ class Handler : RequestHandler<Request, ByteArray?> {
                                 if (input.timestamp > 0) {
                                     setTimeStamp(timestamp)
                                 }
-                                addColumn(family, column)
+                                addColumn(family.toByteArray(), column.toByteArray())
                             })
                             // Return the value of the cell directly, parsed as a UTF-8 string
-                            return result.getValue(family, column)
+                            return result.getValue(family.toByteArray(), column.toByteArray())
                         }
+                    }
+                    else {
+                        logger.info("Table '$tableName' does not exists.")
                     }
                 }
             }
         }
+
+        return
     }
 
     fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, useTablePerTopic: Boolean): ByteArray? {
