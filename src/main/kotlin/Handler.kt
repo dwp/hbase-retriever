@@ -76,8 +76,10 @@ class Handler : RequestHandler<Request, ByteArray?> {
         ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
             if (useTablePerTopic) {
                 with (TableName.valueOf(tableName)) {
-                    connection.admin.disableTable(this)
-                    connection.admin.deleteTable(this)
+                    if (connection.admin.tableExists(this)) {
+                        connection.admin.disableTable(this)
+                        connection.admin.deleteTable(this)
+                    }
                 }
             }
             else {
