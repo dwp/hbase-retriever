@@ -31,13 +31,13 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
         val useTablePerTopic = input.useTablePerTopic
-        val family = (if (useTablePerTopic) "cf" else HbaseConfig.dataFamily).toByteArray()
-        val column = (if (useTablePerTopic) "record" else input.topic).toByteArray()
+        val family = (if (useTablePerTopic) "cf" else HbaseConfig.dataFamily)
+        val column = (if (useTablePerTopic) "record" else input.topic)
         val tableName = tableNameUtil.getQualifiedTableName(input.topic, useTablePerTopic)
         if (isDeleteRequest) {
             logger.info("""Deleting messages from column '${family}:${column}',
                 |table '${tableName}'""".trimMargin().replace("\n", " "))
-            return deleteMessagesFromTopic(family, column, tableName, input.useTablePerTopic)
+            return deleteMessagesFromTopic(family.toByteArray(), column.toByteArray(), tableName, input.useTablePerTopic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
@@ -49,18 +49,27 @@ class Handler : RequestHandler<Request, ByteArray?> {
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
-                connection.getTable(TableName.valueOf(tableName)).use { table ->
-                    val result = table.get(Get(formattedKey).apply {
-                        if (input.timestamp > 0) {
-                            setTimeStamp(timestamp)
+                with (TableName.valueOf(tableName)) {
+                    if (connection.admin.tableExists(this)) {
+                        connection.getTable(this).use { table ->
+                            val result = table.get(Get(formattedKey).apply {
+                                if (input.timestamp > 0) {
+                                    setTimeStamp(timestamp)
+                                }
+                                addColumn(family.toByteArray(), column.toByteArray())
+                            })
+                            // Return the value of the cell directly, parsed as a UTF-8 string
+                            return result.getValue(family.toByteArray(), column.toByteArray())
                         }
-                        addColumn(family, column)
-                    })
-                    // Return the value of the cell directly, parsed as a UTF-8 string
-                    return result.getValue(family, column)
+                    }
+                    else {
+                        logger.info("Table '$tableName' does not exist.")
+                    }
                 }
             }
         }
+
+        return null
     }
 
     fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, useTablePerTopic: Boolean): ByteArray? {
