@@ -63,7 +63,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                         }
                     }
                     else {
-                        logger.info("Table '$tableName' does not exists.")
+                        logger.info("Table '$tableName' does not exist.")
                     }
                 }
             }
