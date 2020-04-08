@@ -22,7 +22,7 @@ class KeyGeneration {
         return getId(stringBuilder)
     }
 
-    fun getId(bodyString: StringBuilder): JsonObject? {
+    fun getId(bodyString: StringBuilder): JsonObject {
         if (guid_regex.matches(String(bodyString))) {
             val idObject = JsonObject()
             idObject["id"] = String(bodyString)
