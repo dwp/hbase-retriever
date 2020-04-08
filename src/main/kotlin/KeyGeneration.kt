@@ -7,6 +7,7 @@ import com.beust.klaxon.KlaxonException
 
 class KeyGeneration {
     private val log: Logger = Logger.getLogger("KeyGeneration")
+    private val alphanumeric_and_hyphens_regex = Regex("^[0-9a-fA-F-]*$")
 
     fun generateKey(jsonString: ByteArray): ByteArray {
         val json = convertToJson(jsonString)
@@ -17,15 +18,28 @@ class KeyGeneration {
     }
 
     fun convertToJson(body: ByteArray): JsonObject {
+        val stringBuilder: StringBuilder = StringBuilder(String(body))
+        return getId(stringBuilder)
+    }
+
+    fun getId(bodyString: StringBuilder): JsonObject {
+        if (alphanumeric_and_hyphens_regex.matches(String(bodyString))) {
+            val idObject = JsonObject()
+            idObject["id"] = String(bodyString)
+            log.info("Incoming id string of '%s' matched GUID and has been changed to '%s'".format(
+                String(bodyString),
+                idObject.toString()
+            ))
+            return idObject
+        }
 
         try {
             val parser: Parser = Parser.default()
-            val stringBuilder: StringBuilder = StringBuilder(String(body))
-            return parser.parse(stringBuilder) as JsonObject
+            return parser.parse(bodyString) as JsonObject
         } catch (e: KlaxonException) {
             log.warning(
                 "Error while parsing message body of '%s' in to json: %s".format(
-                    String(body),
+                    String(bodyString),
                     e.toString()
                 )
             )

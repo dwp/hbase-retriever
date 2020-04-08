@@ -47,7 +47,37 @@ class KeyGenerationTest {
     }
 
     @Test
-    fun invaliedNestedInputThrowsException() {
+    fun validGuidInputConvertsToJson() {
+        val guidString = "afa10ffa-ce12-4a39-8db8-b9af1be09e2a"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
+        val jsonTwo: JsonObject = json.obj("id") as JsonObject
+
+        assertThat(json, instanceOf(JsonObject::class.java))
+        assertEquals(jsonTwo["id"], guidString)
+    }
+
+    @Test
+    fun validStringInputConvertsToJson() {
+        val jsonString = "b9af1be09e2a"
+        val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
+        val jsonTwo: JsonObject = json.obj("id") as JsonObject
+
+        assertThat(json, instanceOf(JsonObject::class.java))
+        assertEquals(jsonTwo["id"], jsonString)
+    }
+
+    @Test
+    fun invalidStringInputThrowsException() {
+        val jsonString = "HasQuotes\""
+
+        val exception = shouldThrow<IllegalArgumentException> {
+            keyGeneration.convertToJson(jsonString.toByteArray())
+        }
+        assertEquals(exception.message, "Cannot parse invalid JSON")
+    }
+
+    @Test
+    fun invalidNestedInputThrowsException() {
         val jsonString = "{\"testOne\":"
 
         val exception = shouldThrow<IllegalArgumentException> {
@@ -94,6 +124,54 @@ class KeyGenerationTest {
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
+
+        assertEquals(checksumOne, checksumTwo)
+    }
+
+    @Test
+    fun canGenerateConsistentChecksumsFromGuidInputs() {
+        val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
+        val idObject = JsonObject()
+        idObject["id"] = String(guidString.toByteArray())
+        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
+
+        assertEquals(checksumOne, checksumTwo)
+    }
+
+    @Test
+    fun canGenerateConsistentChecksumsFromGuidInputAndConvertedInputs() {
+        val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
+        val idObject = JsonObject()
+        idObject["id"] = String(guidString.toByteArray())
+        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumTwo = keyGeneration.generateFourByteChecksum(idObject.toString())
+
+        assertEquals(checksumOne, checksumTwo)
+    }
+
+    @Test
+    fun canGenerateConsistentChecksumsFromMongoInputs() {
+        val guidString = "5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
+        val idObject = JsonObject()
+        idObject["id"] = String(guidString.toByteArray())
+        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
+
+        assertEquals(checksumOne, checksumTwo)
+    }
+
+    @Test
+    fun canGenerateConsistentChecksumsFromMongoInputAndConvertedInputs() {
+        val guidString = "5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
+        val idObject = JsonObject()
+        idObject["id"] = String(guidString.toByteArray())
+        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumTwo = keyGeneration.generateFourByteChecksum(idObject.toString())
 
         assertEquals(checksumOne, checksumTwo)
     }
