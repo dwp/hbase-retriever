@@ -7,7 +7,7 @@ import com.beust.klaxon.KlaxonException
 
 class KeyGeneration {
     private val log: Logger = Logger.getLogger("KeyGeneration")
-    private val guid_regex = Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
+    private val alphanumeric_and_hyphens_regex = Regex("^[0-9a-fA-F-]*$")
 
     fun generateKey(jsonString: ByteArray): ByteArray {
         val json = convertToJson(jsonString)
@@ -23,7 +23,7 @@ class KeyGeneration {
     }
 
     fun getId(bodyString: StringBuilder): JsonObject {
-        if (guid_regex.matches(String(bodyString))) {
+        if (alphanumeric_and_hyphens_regex.matches(String(bodyString))) {
             val idObject = JsonObject()
             idObject["id"] = String(bodyString)
             log.info("Incoming id string of '%s' matched GUID and has been changed to '%s'".format(
