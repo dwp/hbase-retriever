@@ -120,10 +120,10 @@ class KeyGenerationTest {
 
     @Test
     fun canGenerateConsistentChecksumsFromGuidInputs() {
-        val jsonString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
-        val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
+        val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
         val idObject = JsonObject()
-        idObject["id"] = String(bodyString)
+        idObject["id"] = String(guidString.toByteArray())
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
 
@@ -132,10 +132,10 @@ class KeyGenerationTest {
 
     @Test
     fun canGenerateConsistentChecksumsFromGuidInputAndConvertedInputs() {
-        val jsonString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
-        val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
+        val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
+        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
         val idObject = JsonObject()
-        idObject["id"] = String(jsonString)
+        idObject["id"] = String(guidString.toByteArray())
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(idObject.toString())
 
