@@ -7,7 +7,7 @@ import com.beust.klaxon.KlaxonException
 
 class KeyGeneration {
     private val log: Logger = Logger.getLogger("KeyGeneration")
-    private val guid_regex = Regex("^[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}$")
+    private val guid_regex = Regex("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")
 
     fun generateKey(jsonString: ByteArray): ByteArray {
         val json = convertToJson(jsonString)
