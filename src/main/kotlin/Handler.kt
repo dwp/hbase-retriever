@@ -6,28 +6,21 @@ import org.apache.hadoop.hbase.client.ConnectionFactory
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.Scan
-import org.apache.log4j.ConsoleAppender
-import org.apache.log4j.Level
-import org.apache.log4j.Logger
-import org.apache.log4j.PatternLayout
 import app.utils.TableNameUtil
+import org.slf4j.LoggerFactory
+import uk.gov.dwp.dataworks.logging.DataworksLogger
 
 @Suppress("unused")
 class Handler : RequestHandler<Request, ByteArray?> {
-    init {
-        val consoleAppender = ConsoleAppender()
-        consoleAppender.layout = PatternLayout("%d [%p|%c|%C{1}] %m%n")
-        consoleAppender.threshold = Level.INFO
-        consoleAppender.activateOptions()
-        Logger.getRootLogger().addAppender(consoleAppender)
-    }
-
-    private val logger = Logger.getLogger("Handler")
+    private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(Handler::class.java))
     private val keyGeneration = KeyGeneration()
     private val tableNameUtil = TableNameUtil()
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
-        logger.info("Input received for topic '${input.topic}' with key '${input.key}' and timestamp '${input.timestamp}' for delete request '${input.deleteRequest}' and table per topic setting of '${input.useTablePerTopic}'")
+        logger.info("Input received", "input_topic" to input.topic, "input_key" to input.key, 
+            "input_timestamp" to input.timestamp.toString(), "is_delete_request" to input.deleteRequest.toString(), 
+             "is_table_per_topic" to input.useTablePerTopic.toString())
+
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
         val useTablePerTopic = input.useTablePerTopic
@@ -35,17 +28,16 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val column = (if (useTablePerTopic) "record" else input.topic)
         val tableName = tableNameUtil.getQualifiedTableName(input.topic, useTablePerTopic)
         if (isDeleteRequest) {
-            logger.info("""Deleting messages from column '${family}:${column}',
-                |table '${tableName}'""".trimMargin().replace("\n", " "))
+            logger.info("Deleting messages from HBase", "hbase_family" to family, 
+                "hbase_column" to column, "hbase_table_name" to tableName)
             return deleteMessagesFromTopic(family.toByteArray(), column.toByteArray(), tableName, input.useTablePerTopic)
         } else {
             val formattedKey = keyGeneration.generateKey(input.key.toByteArray())
             val printableKey = keyGeneration.printableKey(formattedKey)
 
-            logger.info("""Getting '$printableKey' 
-                |column '${family}:${column}',
-                |table '${tableName}',
-                |timestamp '$timestamp'""".trimMargin().replace("\n", " "))
+            logger.info("Retrieving data", "printable_key" to printableKey, 
+                "hbase_family" to family, "hbase_column" to column,
+                "hbase_table_name" to tableName, "hbase_timestamp" to timestamp.toString())
 
             // Connect to Hbase using configured values
             ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config)).use { connection ->
@@ -63,7 +55,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                         }
                     }
                     else {
-                        logger.info("Table '$tableName' does not exist.")
+                        logger.error("Table does not exist", "hbase_table_name" to tableName)
                     }
                 }
             }

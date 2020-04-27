@@ -1,12 +1,13 @@
-import java.util.logging.Logger
 import java.util.zip.CRC32
 import java.nio.ByteBuffer
 import com.beust.klaxon.Parser
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.KlaxonException
+import org.slf4j.LoggerFactory
+import uk.gov.dwp.dataworks.logging.DataworksLogger
 
 class KeyGeneration {
-    private val log: Logger = Logger.getLogger("KeyGeneration")
+    private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(KeyGeneration::class.java))
     private val alphanumeric_and_hyphens_regex = Regex("^[0-9a-fA-F-]*$")
 
     fun generateKey(jsonString: ByteArray): ByteArray {
@@ -26,10 +27,9 @@ class KeyGeneration {
         if (alphanumeric_and_hyphens_regex.matches(String(bodyString))) {
             val idObject = JsonObject()
             idObject["id"] = String(bodyString)
-            log.info("Incoming id string of '%s' matched GUID and has been changed to '%s'".format(
-                String(bodyString),
-                idObject.toString()
-            ))
+            logger.info("Incoming id string matched GUID and has been changed",
+                "original_id" to String(bodyString),
+                "transformed_id" to idObject.toString())
             return idObject
         }
 
@@ -37,12 +37,9 @@ class KeyGeneration {
             val parser: Parser = Parser.default()
             return parser.parse(bodyString) as JsonObject
         } catch (e: KlaxonException) {
-            log.warning(
-                "Error while parsing message body of '%s' in to json: %s".format(
-                    String(bodyString),
-                    e.toString()
-                )
-            )
+            logger.error(
+                "Error while parsing message body in to json", e,
+                "message_body" to String(bodyString))
             throw IllegalArgumentException("Cannot parse invalid JSON")
         }
     }
