@@ -6,11 +6,6 @@ import io.kotlintest.properties.assertAll
 import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertTrue
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertThat
 import org.junit.Test
 import org.hamcrest.CoreMatchers.instanceOf;
 
@@ -23,7 +18,7 @@ class KeyGenerationTest {
         val jsonString = "{\"testOne\":\"test1\",\n\"testTwo\":2}"
         val key = keyGeneration.generateKey(jsonString.toByteArray())
         val printable = keyGeneration.printableKey(key)
-        assertEquals(printable, """\xfb\xdb\xd9\xb1{"testOne":"test1","testTwo":2}""")
+        printable shouldBe """\xfb\xdb\xd9\xb1{"testOne":"test1","testTwo":2}"""
     }
 
     @Test
@@ -31,9 +26,9 @@ class KeyGenerationTest {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
 
-        assertThat(json, instanceOf(JsonObject::class.java))
-        assertEquals(json.string("testOne"), "test1")
-        assertEquals(json.int("testTwo"), 2)
+        json shouldNotBe null
+        json.string("testOne") shouldBe "test1"
+        json.int("testTwo") shouldBe 2
     }
 
     @Test
@@ -42,28 +37,26 @@ class KeyGenerationTest {
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
         val jsonTwo: JsonObject = json.obj("testOne") as JsonObject
 
-        assertThat(json, instanceOf(JsonObject::class.java))
-        assertEquals(jsonTwo.int("testTwo"), 2)
+        json shouldNotBe null
+        jsonTwo.int("testTwo") shouldBe 2
     }
 
     @Test
     fun validGuidInputConvertsToJson() {
         val guidString = "afa10ffa-ce12-4a39-8db8-b9af1be09e2a"
         val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
-        val jsonTwo: JsonObject = json.obj("id") as JsonObject
 
-        assertThat(json, instanceOf(JsonObject::class.java))
-        assertEquals(jsonTwo["id"], guidString)
+        json shouldNotBe null
+        json["id"] shouldBe guidString
     }
 
     @Test
     fun validStringInputConvertsToJson() {
         val jsonString = "b9af1be09e2a"
         val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
-        val jsonTwo: JsonObject = json.obj("id") as JsonObject
 
-        assertThat(json, instanceOf(JsonObject::class.java))
-        assertEquals(jsonTwo["id"], jsonString)
+        json shouldNotBe null
+        json["id"] shouldBe jsonString
     }
 
     @Test
@@ -73,7 +66,8 @@ class KeyGenerationTest {
         val exception = shouldThrow<IllegalArgumentException> {
             keyGeneration.convertToJson(jsonString.toByteArray())
         }
-        assertEquals(exception.message, "Cannot parse invalid JSON")
+
+        exception.message shouldBe "Cannot parse invalid JSON"
     }
 
     @Test
@@ -83,7 +77,8 @@ class KeyGenerationTest {
         val exception = shouldThrow<IllegalArgumentException> {
             keyGeneration.convertToJson(jsonString.toByteArray())
         }
-        assertEquals(exception.message, "Cannot parse invalid JSON")
+
+        exception.message shouldBe "Cannot parse invalid JSON"
     }
 
     @Test
@@ -94,7 +89,7 @@ class KeyGenerationTest {
 
         val sortedJson = keyGeneration.sortJsonByKey(jsonObjectUnsorted)
 
-        assertEquals(sortedJson, jsonStringSorted)
+        sortedJson shouldBe jsonStringSorted
     }
 
     @Test
@@ -105,39 +100,35 @@ class KeyGenerationTest {
 
         val sortedJson = keyGeneration.sortJsonByKey(jsonObjectUnsorted)
 
-        assertEquals(sortedJson, jsonStringSorted)
+        sortedJson shouldBe jsonStringSorted
     }
 
     @Test
     fun checksumsAreDifferentWithDifferentInputs() {
         val jsonStringOne = "{\"testOne\":\"test1\", \"testTwo\":2}"
         val jsonStringTwo = "{\"testOne\":\"test2\", \"testTwo\":2}"
-        val checksum = keyGeneration.generateFourByteChecksum(jsonStringOne)
+        val checksumOne = keyGeneration.generateFourByteChecksum(jsonStringOne)
         val checksumTwo = keyGeneration.generateFourByteChecksum(jsonStringTwo)
 
-        assertNotEquals(checksum, checksumTwo)
+        checksumOne shouldNotBe checksumTwo
     }
 
     @Test
     fun canGenerateConsistentChecksumsFromJson() {
         val jsonString = "{\"testOne\":\"test1\", \"testTwo\":2}"
-        val json: JsonObject = keyGeneration.convertToJson(jsonString.toByteArray())
-        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
-        val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumOne = keyGeneration.generateKey(jsonString.toByteArray())
+        val checksumTwo = keyGeneration.generateKey(jsonString.toByteArray())
 
-        assertEquals(checksumOne, checksumTwo)
+        checksumOne shouldBe checksumTwo
     }
 
     @Test
     fun canGenerateConsistentChecksumsFromGuidInputs() {
         val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
-        val json: JsonObject = keyGeneration.convertToJson(guidString.toByteArray())
-        val idObject = JsonObject()
-        idObject["id"] = String(guidString.toByteArray())
-        val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
-        val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
+        val checksumOne = keyGeneration.generateKey(guidString.toByteArray())
+        val checksumTwo = keyGeneration.generateKey(guidString.toByteArray())
 
-        assertEquals(checksumOne, checksumTwo)
+        checksumOne shouldBe checksumTwo
     }
 
     @Test
@@ -149,7 +140,7 @@ class KeyGenerationTest {
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(idObject.toString())
 
-        assertEquals(checksumOne, checksumTwo)
+        checksumOne shouldBe checksumTwo
     }
 
     @Test
@@ -161,7 +152,7 @@ class KeyGenerationTest {
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(json.toString())
 
-        assertEquals(checksumOne, checksumTwo)
+        checksumOne shouldBe checksumTwo
     }
 
     @Test
@@ -173,14 +164,14 @@ class KeyGenerationTest {
         val checksumOne = keyGeneration.generateFourByteChecksum(json.toString())
         val checksumTwo = keyGeneration.generateFourByteChecksum(idObject.toString())
 
-        assertEquals(checksumOne, checksumTwo)
+        checksumOne shouldBe checksumTwo
     }
 
     @Test
     fun generatedChecksumsAreFourBytes() {
         assertAll { input: String ->
             val checksum = keyGeneration.generateFourByteChecksum(input)
-            assertEquals(checksum.size, 4)
+            checksum.size shouldBe 4
         }
     }
 
@@ -191,7 +182,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(json)
         val keyTwo: ByteArray = keyGeneration.generateKey(json)
 
-        assertTrue(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe true
     }
 
     @Test
@@ -202,7 +193,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
     }
 
     @Test
@@ -213,7 +204,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertTrue(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe true
     }
 
     @Test
@@ -224,7 +215,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertTrue(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe true
     }
 
     @Test
@@ -235,7 +226,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertTrue(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe true
     }
 
     @Test
@@ -246,7 +237,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
     }
 
     @Test
@@ -257,7 +248,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
     }
 
     @Test
@@ -268,7 +259,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
     }
 
     @Test
@@ -279,7 +270,7 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
     }
 
     @Test
@@ -290,6 +281,31 @@ class KeyGenerationTest {
         val keyOne: ByteArray = keyGeneration.generateKey(jsonOne)
         val keyTwo: ByteArray = keyGeneration.generateKey(jsonTwo)
 
-        assertFalse(keyOne.contentEquals(keyTwo))
+        keyOne.contentEquals(keyTwo) shouldBe false
+    }
+
+    @Test
+    fun getIdReturnsObjectWithEmbeddedGuidForGuidInput() {
+        val guidString = "ff468955-9cf2-4047-a105-e5e7ae6f5b99"
+        
+        val expectedObject = JsonObject()
+        expectedObject["id"] = guidString
+
+        val actualObject = keyGeneration.convertToJson(guidString.toByteArray())
+
+        expectedObject shouldBe actualObject
+    }
+
+    @Test
+    fun getIdReturnsObjectForObjectInput() {
+        val jsonOne = "{\"testOne\":\"test1\", \"testTwo\":2}"
+        
+        val expectedObject = JsonObject()
+        expectedObject["testOne"] = "test1"
+        expectedObject["testTwo"] = 2
+
+        val actualObject = keyGeneration.convertToJson(jsonOne.toByteArray())
+
+        expectedObject shouldBe actualObject
     }
 }

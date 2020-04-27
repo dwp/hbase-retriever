@@ -1,6 +1,7 @@
 package app.utils
 
-import org.junit.Assert.*
+import io.kotlintest.shouldBe
+import io.kotlintest.shouldNotBe
 import org.junit.Test
 
 class TableNameUtilTest {
@@ -58,23 +59,23 @@ class TableNameUtilTest {
     private fun assertValidTopicNameIsAMatch(database: String, collection: String) {
         val allChars = "ab.$database.$collection"
         val matcher = TableNameUtil().topicNameTableMatcher(allChars)
-        assertNotNull(matcher)
+        matcher shouldNotBe null
         if (matcher != null) {
             val actualDatabase = matcher.groupValues[1]
             val actualCollection = matcher.groupValues[2]
-            assertEquals(database, actualDatabase)
-            assertEquals(collection, actualCollection)
+            database shouldBe actualDatabase
+            collection shouldBe actualCollection
         }
     }
 
     private fun assertInvalidTopicNameIsNotAMatch(database: String, collection: String) {
         val allChars = "ab.$database.$collection"
         val matcher = TableNameUtil().topicNameTableMatcher(allChars)
-        assertNull(matcher)
+        matcher shouldBe null
     }
 
     private fun assertCorrectTableNameIsReturned(topic: String, useTablePerTopic: Boolean, expectedTableName: String) {
         val tableName = TableNameUtil().getQualifiedTableName(topic, useTablePerTopic)
-        assertEquals(expectedTableName, tableName)
+        expectedTableName shouldBe tableName
     }
 }
