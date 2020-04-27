@@ -24,9 +24,13 @@ dependencies {
     implementation("junit:junit:4.12")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.0")
     implementation("com.github.dwp:dataworks-common-logging:0.0.5")
+    implementation("ch.qos.logback", "logback-classic", "1.2.3")
+    implementation("ch.qos.logback", "logback-core", "1.2.3")
     testImplementation("io.kotlintest", "kotlintest-runner-junit5", "3.3.2")
-    runtimeOnly("ch.qos.logback:logback-classic:1.2.3")
-    runtimeOnly("ch.qos.logback:logback-core:1.2.3")
+}
+
+configurations.all {
+    exclude(group="org.slf4j", module="slf4j-log4j12")
 }
 
 tasks.withType<KotlinCompile> {
