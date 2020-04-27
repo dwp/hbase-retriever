@@ -29,20 +29,8 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-core:1.2.3")
 }
 
-tasks.withType<Test> {
-    useJUnitPlatform { }
-}
-
 tasks.withType<KotlinCompile> {
     kotlinOptions.jvmTarget = "1.8"
-}
-
-sourceSets {
-    create("unit") {
-        java.srcDir(file("src/test/kotlin"))
-        compileClasspath += sourceSets.getByName("main").output + configurations.testRuntimeClasspath
-        runtimeClasspath += output + compileClasspath
-    }
 }
 
 tasks.named<Jar>("jar") {
@@ -54,17 +42,4 @@ tasks.named<Jar>("jar") {
     from({
         configurations.runtimeClasspath.get().filter { it.name.endsWith("jar") }.map { zipTree(it) }
     })
-}
-
-tasks.register<Test>("unit") {
-    description = "Runs the unit tests"
-    group = "verification"
-    testClassesDirs = sourceSets["unit"].output.classesDirs
-    classpath = sourceSets["unit"].runtimeClasspath
-
-    useJUnitPlatform { }
-    testLogging {
-        exceptionFormat = TestExceptionFormat.FULL
-        events = setOf(TestLogEvent.SKIPPED, TestLogEvent.PASSED, TestLogEvent.FAILED)
-    }
 }

@@ -35,7 +35,8 @@ class KeyGeneration {
 
         try {
             val parser: Parser = Parser.default()
-            return parser.parse(bodyString) as JsonObject
+            val stringBuilder = StringBuilder(bodyString)
+            return parser.parse(stringBuilder) as JsonObject
         } catch (e: KlaxonException) {
             logger.error(
                 "Error while parsing message body in to json", e,
@@ -50,13 +51,12 @@ class KeyGeneration {
 
         checksum.update(bytes, 0, bytes.size)
 
-        return ByteBuffer.allocate(4).putInt(checksum.getValue().toInt()).array()
+        return ByteBuffer.allocate(4).putInt(checksum.value.toInt()).array()
     }
 
     fun sortJsonByKey(unsortedJson: JsonObject): String {
         val sortedEntries = unsortedJson.toSortedMap(compareBy { it })
-        val json = JsonObject(sortedEntries)
-        
+        val json: JsonObject = JsonObject(sortedEntries)
         return json.toJsonString()
     }
 
