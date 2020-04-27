@@ -7,6 +7,8 @@ import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
 import org.junit.Test
+import io.mockk.every
+import io.mockk.mockkObject
 import org.hamcrest.CoreMatchers.instanceOf;
 
 
