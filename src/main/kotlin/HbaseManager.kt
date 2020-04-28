@@ -49,16 +49,10 @@ open class HbaseManager {
                 logger.info("Clearing table", "hbase_family" to String(dataFamily),
                     "hbase_table_name" to tableName, "hbase_qualifier" to String(dataQualifier))
 
-                connection.getTable(TableName.valueOf(tableName)).use { table ->
-                    val deleteList = mutableListOf<Delete>()
-                    val scan = Scan()
-                    val scanner = table.getScanner(scan)
-                    scanner.forEach { result ->
-                        val rowKey = result.row
-                        val delete = Delete(rowKey).addColumns(dataFamily, dataQualifier)
-                        deleteList.add(delete)
+                with (TableName.valueOf(tableName)) {
+                    if (connection.admin.tableExists(this)) {
+                        connection.admin.truncateTable(this)
                     }
-                    table.delete(deleteList)
                 }
             }
         }

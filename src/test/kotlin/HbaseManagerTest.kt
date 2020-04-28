@@ -32,42 +32,23 @@ class HbaseManagerTest {
     private val timestamp = 1L
     
     @Test
-    fun clearHbaseTableWhenRequested() {
+    fun truncateHbaseTableWhenRequested() {
         val adm = mock<Admin> {
             on { tableExists(TableName.valueOf(qualifiedTableName)) } doReturn true
         }
 
-        val result = mock<Result>() {
-            on { row } doReturn rowKey 
-        }
-
-        val resultList = mutableListOf<Result>()
-        resultList.add(result)
-        val scanner = mock<ResultScanner>() {
-            on { iterator() } doReturn resultList.iterator()
-        }
-
-        val deleteList = mutableListOf<Delete>()
-        val delete = Delete(rowKey).addColumns(dataFamily, dataQualifier)
-        deleteList.add(delete)
-
-        val table = mock<Table>() {
-            on { getScanner(any<Scan>()) } doReturn scanner
-        }
-
-        doNothing().whenever(table).delete(deleteList)
-        
         val connection = mock<Connection> {
             on { admin } doReturn adm
-            on { getTable(TableName.valueOf(qualifiedTableName)) } doReturn table
         }
 
         with (HbaseManager()) {
             deleteMessagesFromTopic(connection, dataFamily, dataQualifier, qualifiedTableName, false)
         }
 
-        verify(connection, times(1)).getTable(TableName.valueOf(qualifiedTableName))
-        verify(table, times(1)).delete(refEq(deleteList))
+        verify(adm, times(1)).truncateTable(TableName.valueOf(qualifiedTableName))
+        verify(adm, times(0)).disableTable(TableName.valueOf(qualifiedTableName))
+        verify(adm, times(0)).deleteTable(TableName.valueOf(qualifiedTableName))
+        verify(connection, times(0)).getTable(any<TableName>())
     }
     
     @Test
@@ -86,6 +67,7 @@ class HbaseManagerTest {
 
         verify(adm, times(1)).disableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(1)).deleteTable(TableName.valueOf(qualifiedTableName))
+        verify(adm, times(0)).truncateTable(TableName.valueOf(qualifiedTableName))
         verify(connection, times(0)).getTable(any<TableName>())
     }
     

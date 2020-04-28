@@ -15,8 +15,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
 
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
         logger.info("Input received", "input_topic" to input.topic, "input_key" to input.key, 
-            "input_timestamp" to input.timestamp.toString(), "is_delete_request" to input.deleteRequest.toString(), 
-            "is_delete_entire_table" to input.deleteEntireTableWhenInDeleteMode.toString())
+            "input_timestamp" to input.timestamp.toString(), "is_delete_request" to input.deleteRequest.toString())
 
         val keyGeneration = KeyGenerationUtil()
         val tableNameUtil = TableNameUtil()
@@ -39,7 +38,8 @@ class Handler : RequestHandler<Request, ByteArray?> {
 
         if (isDeleteRequest) {
             logger.info("Deleting messages from HBase", "hbase_family" to family, 
-                "hbase_column" to column, "hbase_table_name" to tableName)
+                "hbase_column" to column, "hbase_table_name" to tableName,
+                "is_delete_entire_table" to deleteEntireTable.toString())
 
             return hbaseManager.deleteMessagesFromTopic(connection, family.toByteArray(), column.toByteArray(), tableName, deleteEntireTable)
         } 
