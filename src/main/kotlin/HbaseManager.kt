@@ -51,7 +51,7 @@ open class HbaseManager {
 
                 with (TableName.valueOf(tableName)) {
                     if (connection.admin.tableExists(this)) {
-                        connection.admin.truncateTable(this)
+                        connection.admin.truncateTable(this, false)
                     }
                 }
             }

@@ -45,7 +45,7 @@ class HbaseManagerTest {
             deleteMessagesFromTopic(connection, dataFamily, dataQualifier, qualifiedTableName, false)
         }
 
-        verify(adm, times(1)).truncateTable(TableName.valueOf(qualifiedTableName))
+        verify(adm, times(1)).truncateTable(TableName.valueOf(qualifiedTableName), false)
         verify(adm, times(0)).disableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(0)).deleteTable(TableName.valueOf(qualifiedTableName))
         verify(connection, times(0)).getTable(any<TableName>())
@@ -67,7 +67,7 @@ class HbaseManagerTest {
 
         verify(adm, times(1)).disableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(1)).deleteTable(TableName.valueOf(qualifiedTableName))
-        verify(adm, times(0)).truncateTable(TableName.valueOf(qualifiedTableName))
+        verify(adm, times(0)).truncateTable(TableName.valueOf(qualifiedTableName), false)
         verify(connection, times(0)).getTable(any<TableName>())
     }
     
