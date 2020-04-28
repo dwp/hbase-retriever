@@ -15,71 +15,63 @@ import org.apache.hadoop.hbase.client.Connection
 import org.apache.hadoop.hbase.client.Table
 import org.apache.hadoop.hbase.client.Delete
 import org.apache.hadoop.hbase.client.Scan
+import org.apache.hadoop.hbase.client.Get
 import org.apache.hadoop.hbase.client.ResultScanner
 import org.apache.hadoop.hbase.client.Result
-
+import app.utils.TableNameUtil
+import app.utils.KeyGenerationUtil
 
 class HandlerTest {
-    private val rowKey = "testRowKey".toByteArray()
-    private val dataQualifier = "testQualifier".toByteArray()
-    private val dataFamily = "testFamily".toByteArray()
-    private val qualifiedTableName = "test_table"
+    private val expectedDataQualifier = "testQualifier".toByteArray()
+    private val dataFamily = "testFamily"
+    private val dataColumn = "testColumn"
+    private val expectedCellValue = "testValue".toByteArray()
+    private val validTopic = "db.test.topic"
+    private val inputKey = "testKey"
+    private val formattedKey = "testKeyFormatted".toByteArray()
+    private val printableKey = "testKeyFormatted"
+    private val qualifiedTableName = "test_topic"
+    private val timestamp = 1L
     
     @Test
-    fun clearHbaseTableWhenRequested() {
-        val adm = mock<Admin> {
-            on { tableExists(TableName.valueOf(qualifiedTableName)) } doReturn true
+    fun canProcessValidDeleteRequest() {
+        val deleteRequestValue = false
+        val useTablePerTopicValue = false
+
+        val connection = mock<Connection>()
+
+        val keyGeneration = mock<KeyGenerationUtil>() {
+            on { generateKey(inputKey.toByteArray()) } doReturn formattedKey
+            on { printableKey(formattedKey) } doReturn printableKey
         }
 
-        val result = mock<Result>() {
-            on { row } doReturn rowKey 
+        val tableNameUtil = mock<TableNameUtil>() {
+            on { getQualifiedTableName(validTopic) } doReturn qualifiedTableName 
         }
 
-        val resultList = mutableListOf<Result>()
-        resultList.add(result)
-        val scanner = mock<ResultScanner>() {
-            on { iterator() } doReturn resultList.iterator()
+        val hbaseManager = mock<HbaseManager>() {
+            on { deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteRequestValue) } doReturn expectedDataQualifier 
+            on { getDataFromHbase(connection, qualifiedTableName, formattedKey, dataFamily.toByteArray(), dataColumn.toByteArray(), timestamp) } doReturn expectedCellValue 
         }
 
-        val deleteList = mutableListOf<Delete>()
-        val delete = Delete(rowKey).addColumns(dataFamily, dataQualifier)
-        deleteList.add(delete)
-
-        val table = mock<Table>() {
-            on { getScanner(any<Scan>()) } doReturn scanner
-        }
-
-        doNothing().whenever(table).delete(deleteList)
-        
-        val connection = mock<Connection> {
-            on { admin } doReturn adm
-            on { getTable(TableName.valueOf(qualifiedTableName)) } doReturn table
-        }
+        val request = Request()
+        request.topic = validTopic
+        request.key = inputKey
+        request.timestamp = timestamp
+        request.deleteRequest = deleteRequestValue
+        request.useTablePerTopic = useTablePerTopicValue
 
         with (Handler()) {
-            deleteMessagesFromTopic(connection, dataFamily, dataQualifier, qualifiedTableName, false)
-        }
+            val actualCellValue = processRequest(connection, request, keyGeneration, tableNameUtil, hbaseManager, dataFamily, dataColumn)
 
-        verify(connection, times(1)).getTable(TableName.valueOf(qualifiedTableName))
-        verify(table, times(1)).delete(refEq(deleteList))
-    }
-    
-    @Test
-    fun deleteHbaseTableWhenRequested() {
-        val adm = mock<Admin> {
-            on { tableExists(TableName.valueOf(qualifiedTableName)) } doReturn true
-        }
+            verify(tableNameUtil, times(1)).getQualifiedTableName(validTopic)
+            verify(keyGeneration, times(1)).generateKey(inputKey.toByteArray())
+            verify(keyGeneration, times(1)).printableKey(formattedKey)
+            verify(hbaseManager, times(1)).getDataFromHbase(connection, qualifiedTableName, formattedKey, dataFamily.toByteArray(), dataColumn.toByteArray(), timestamp)
 
-        val connection = mock<Connection> {
-            on { admin } doReturn adm
-        }
+            verify(hbaseManager, times(0)).deleteMessagesFromTopic(any(), any(), any(), any(), any())
 
-        with (Handler()) {
-            deleteMessagesFromTopic(connection, dataFamily, dataQualifier, qualifiedTableName, true)
+            actualCellValue shouldBe expectedCellValue
         }
-
-        verify(adm, times(1)).disableTable(TableName.valueOf(qualifiedTableName))
-        verify(adm, times(1)).deleteTable(TableName.valueOf(qualifiedTableName))
-        verify(connection, times(0)).getTable(any<TableName>())
     }
 }

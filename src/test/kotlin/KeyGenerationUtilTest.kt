@@ -6,10 +6,11 @@ import io.kotlintest.properties.assertAll
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
 import org.junit.Test
+import app.utils.KeyGenerationUtil
 
 
 class KeyGenerationTest {
-    val keyGeneration = KeyGeneration()
+    val keyGeneration = KeyGenerationUtil()
 
     @Test
     fun printableKeyShouldRenderSuccessfully() {
