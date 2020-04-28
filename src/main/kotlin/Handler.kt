@@ -16,7 +16,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
     override fun handleRequest(input: Request, context: Context?): ByteArray? {
         logger.info("Input received", "input_topic" to input.topic, "input_key" to input.key, 
             "input_timestamp" to input.timestamp.toString(), "is_delete_request" to input.deleteRequest.toString(), 
-            "is_delete_entire_table" to input.useTablePerTopic.toString())
+            "is_delete_entire_table" to input.deleteEntireTableWhenInDeleteMode.toString())
 
         val keyGeneration = KeyGenerationUtil()
         val tableNameUtil = TableNameUtil()
@@ -32,7 +32,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
     fun processRequest(connection: Connection, input: Request, keyGeneration: KeyGenerationUtil, tableNameUtil: TableNameUtil, hbaseManager: HbaseManager, family: String, column: String): ByteArray? {
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
-        val deleteEntireTable = input.useTablePerTopic
+        val deleteEntireTable = input.deleteEntireTableWhenInDeleteMode
         val key = input.key
 
         val tableName = tableNameUtil.getQualifiedTableName(input.topic)

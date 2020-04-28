@@ -34,9 +34,9 @@ class HandlerTest {
     private val timestamp = 1L
     
     @Test
-    fun canProcessValidDeleteRequest() {
+    fun canProcessValidGetRequest() {
         val deleteRequestValue = false
-        val useTablePerTopicValue = false
+        val deleteEntireTableWhenInDeleteModeValue = false
 
         val connection = mock<Connection>()
 
@@ -50,7 +50,7 @@ class HandlerTest {
         }
 
         val hbaseManager = mock<HbaseManager>() {
-            on { deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteRequestValue) } doReturn expectedDataQualifier 
+            on { deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteEntireTableWhenInDeleteModeValue) } doReturn expectedDataQualifier 
             on { getDataFromHbase(connection, qualifiedTableName, formattedKey, dataFamily.toByteArray(), dataColumn.toByteArray(), timestamp) } doReturn expectedCellValue 
         }
 
@@ -59,7 +59,7 @@ class HandlerTest {
         request.key = inputKey
         request.timestamp = timestamp
         request.deleteRequest = deleteRequestValue
-        request.useTablePerTopic = useTablePerTopicValue
+        request.deleteEntireTableWhenInDeleteMode = deleteEntireTableWhenInDeleteModeValue
 
         with (Handler()) {
             val actualCellValue = processRequest(connection, request, keyGeneration, tableNameUtil, hbaseManager, dataFamily, dataColumn)
@@ -72,6 +72,90 @@ class HandlerTest {
             verify(hbaseManager, times(0)).deleteMessagesFromTopic(any(), any(), any(), any(), any())
 
             actualCellValue shouldBe expectedCellValue
+        }
+    }
+    
+    @Test
+    fun canProcessValidDeleteRequest() {
+        val deleteRequestValue = true
+        val deleteEntireTableWhenInDeleteModeValue = true
+
+        val connection = mock<Connection>()
+
+        val keyGeneration = mock<KeyGenerationUtil>() {
+            on { generateKey(inputKey.toByteArray()) } doReturn formattedKey
+            on { printableKey(formattedKey) } doReturn printableKey
+        }
+
+        val tableNameUtil = mock<TableNameUtil>() {
+            on { getQualifiedTableName(validTopic) } doReturn qualifiedTableName 
+        }
+
+        val hbaseManager = mock<HbaseManager>() {
+            on { deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteEntireTableWhenInDeleteModeValue) } doReturn expectedDataQualifier 
+            on { getDataFromHbase(connection, qualifiedTableName, formattedKey, dataFamily.toByteArray(), dataColumn.toByteArray(), timestamp) } doReturn expectedCellValue 
+        }
+
+        val request = Request()
+        request.topic = validTopic
+        request.key = inputKey
+        request.timestamp = timestamp
+        request.deleteRequest = deleteRequestValue
+        request.deleteEntireTableWhenInDeleteMode = deleteEntireTableWhenInDeleteModeValue
+
+        with (Handler()) {
+            val actualDataQualifier = processRequest(connection, request, keyGeneration, tableNameUtil, hbaseManager, dataFamily, dataColumn)
+
+            verify(tableNameUtil, times(1)).getQualifiedTableName(validTopic)
+            verify(hbaseManager, times(1)).deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteEntireTableWhenInDeleteModeValue)
+
+            verify(keyGeneration, times(0)).generateKey(any())
+            verify(keyGeneration, times(0)).printableKey(any())
+            verify(hbaseManager, times(0)).getDataFromHbase(any(), any(), any(), any(), any(), any())
+
+            actualDataQualifier shouldBe expectedDataQualifier
+        }
+    }
+    
+    @Test
+    fun canProcessValidTruncateRequest() {
+        val deleteRequestValue = true
+        val deleteEntireTableWhenInDeleteModeValue = false
+
+        val connection = mock<Connection>()
+
+        val keyGeneration = mock<KeyGenerationUtil>() {
+            on { generateKey(inputKey.toByteArray()) } doReturn formattedKey
+            on { printableKey(formattedKey) } doReturn printableKey
+        }
+
+        val tableNameUtil = mock<TableNameUtil>() {
+            on { getQualifiedTableName(validTopic) } doReturn qualifiedTableName 
+        }
+
+        val hbaseManager = mock<HbaseManager>() {
+            on { deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteEntireTableWhenInDeleteModeValue) } doReturn expectedDataQualifier 
+            on { getDataFromHbase(connection, qualifiedTableName, formattedKey, dataFamily.toByteArray(), dataColumn.toByteArray(), timestamp) } doReturn expectedCellValue 
+        }
+
+        val request = Request()
+        request.topic = validTopic
+        request.key = inputKey
+        request.timestamp = timestamp
+        request.deleteRequest = deleteRequestValue
+        request.deleteEntireTableWhenInDeleteMode = deleteEntireTableWhenInDeleteModeValue
+
+        with (Handler()) {
+            val actualDataQualifier = processRequest(connection, request, keyGeneration, tableNameUtil, hbaseManager, dataFamily, dataColumn)
+
+            verify(tableNameUtil, times(1)).getQualifiedTableName(validTopic)
+            verify(hbaseManager, times(1)).deleteMessagesFromTopic(connection, dataFamily.toByteArray(), dataColumn.toByteArray(), qualifiedTableName, deleteEntireTableWhenInDeleteModeValue)
+
+            verify(keyGeneration, times(0)).generateKey(any())
+            verify(keyGeneration, times(0)).printableKey(any())
+            verify(hbaseManager, times(0)).getDataFromHbase(any(), any(), any(), any(), any(), any())
+
+            actualDataQualifier shouldBe expectedDataQualifier
         }
     }
 }
