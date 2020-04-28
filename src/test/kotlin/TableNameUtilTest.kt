@@ -2,6 +2,7 @@ package app.utils
 
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
+import io.kotlintest.shouldThrow
 import org.junit.Test
 
 class TableNameUtilTest {
@@ -37,23 +38,17 @@ class TableNameUtilTest {
     }
 
     @Test
-    fun ensureDefaultTableNameReturnedWhenNotUsingTablePerTopicOptionWithValidTopicName() {
-        assertCorrectTableNameIsReturned("db.database.collection", false, HbaseConfig.dataTable)
+    fun ensureParsedTableNameReturnedWithValidTopicName() {
+        val actualTableName = TableNameUtil().getQualifiedTableName("db.database-1.collection-1")
+        actualTableName shouldBe "database_1:collection_1"
     }
 
     @Test
-    fun ensureDefaultTableNameReturnedWhenNotUsingTablePerTopicOptionWithInvalidTopicName() {
-        assertCorrectTableNameIsReturned("db collection", false, HbaseConfig.dataTable)
-    }
-
-    @Test
-    fun ensureDefaultTableNameReturnedWhenUsingTablePerTopicOptionWithInvalidTopicName() {
-        assertCorrectTableNameIsReturned("database.collection", true, HbaseConfig.dataTable)
-    }
-
-    @Test
-    fun ensureParsedTableNameReturnedWhenUsingTablePerTopicOptionWithValidTopicName() {
-        assertCorrectTableNameIsReturned("db.database-1.collection-1", true, "database_1:collection_1")
+    fun ensureExceptionIsThrownWithInvalidTopicName() {
+        val exception = shouldThrow<Exception> {
+            TableNameUtil().getQualifiedTableName("database.collection")
+        }
+        exception.message shouldBe "Could not parse table name from topic: 'database.collection'"
     }
 
     private fun assertValidTopicNameIsAMatch(database: String, collection: String) {
@@ -72,10 +67,5 @@ class TableNameUtilTest {
         val allChars = "ab.$database.$collection"
         val matcher = TableNameUtil().topicNameTableMatcher(allChars)
         matcher shouldBe null
-    }
-
-    private fun assertCorrectTableNameIsReturned(topic: String, useTablePerTopic: Boolean, expectedTableName: String) {
-        val tableName = TableNameUtil().getQualifiedTableName(topic, useTablePerTopic)
-        expectedTableName shouldBe tableName
     }
 }

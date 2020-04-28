@@ -3,11 +3,9 @@ import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
 import io.kotlintest.properties.assertAll
-import io.kotlintest.matchers.beInstanceOf
 import io.kotlintest.specs.StringSpec
 import com.beust.klaxon.JsonObject
 import org.junit.Test
-import org.hamcrest.CoreMatchers.instanceOf;
 
 
 class KeyGenerationTest {

@@ -27,6 +27,7 @@ dependencies {
     implementation("ch.qos.logback", "logback-classic", "1.2.3")
     implementation("ch.qos.logback", "logback-core", "1.2.3")
     testImplementation("io.kotlintest", "kotlintest-runner-junit5", "3.3.2")
+    testImplementation("com.nhaarman.mockitokotlin2", "mockito-kotlin", "2.2.0")
 }
 
 configurations.all {
