@@ -1,3 +1,5 @@
+package app.utils
+
 import java.util.zip.CRC32
 import java.nio.ByteBuffer
 import com.beust.klaxon.Parser
@@ -6,11 +8,11 @@ import com.beust.klaxon.KlaxonException
 import org.slf4j.LoggerFactory
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 
-class KeyGeneration {
-    private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(KeyGeneration::class.java))
+open class KeyGenerationUtil {
+    private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(KeyGenerationUtil::class.java))
     private val alphanumeric_and_hyphens_regex = Regex("^[0-9a-fA-F-]*$")
 
-    fun generateKey(jsonString: ByteArray): ByteArray {
+    open fun generateKey(jsonString: ByteArray): ByteArray {
         val json = convertToJson(jsonString)
         val jsonOrdered = sortJsonByKey(json)
         val checksumBytes: ByteArray = generateFourByteChecksum(jsonOrdered)
@@ -60,7 +62,7 @@ class KeyGeneration {
         return json.toJsonString()
     }
 
-    fun printableKey(key: ByteArray): String {
+    open fun printableKey(key: ByteArray): String {
         val hash = key.slice(IntRange(0, 3))
         val hex = hash.map { String.format("\\x%02x", it) }.joinToString("")
         val renderable = key.slice(IntRange(4, key.size - 1)).map{ it.toChar() }.joinToString("")
