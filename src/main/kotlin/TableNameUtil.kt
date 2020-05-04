@@ -15,11 +15,11 @@ open class TableNameUtil {
         if (matcher != null) {
             val namespace = matcher.groupValues[1]
             val tableName = matcher.groupValues[2]
-            val qualified_table_name = "$namespace:$tableName".replace("-", "_")
+            val qualifiedTableName = "$namespace:$tableName".replace("-", "_")
             logger.info("Successfully parsed table name from topic", 
                 "topic" to topic, "regex_pattern" to regexPattern, 
-                "qualified_table_name" to qualified_table_name)
-            return qualified_table_name
+                "qualified_table_name" to qualifiedTableName)
+            return qualifiedTableName
         }
         else {
             logger.error("Could not parse table name from topic", 

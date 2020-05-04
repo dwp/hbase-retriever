@@ -1,12 +1,10 @@
-import io.kotlintest.should
+import app.utils.KeyGenerationUtil
+import com.beust.klaxon.JsonObject
+import io.kotlintest.properties.assertAll
 import io.kotlintest.shouldBe
 import io.kotlintest.shouldNotBe
 import io.kotlintest.shouldThrow
-import io.kotlintest.properties.assertAll
-import io.kotlintest.specs.StringSpec
-import com.beust.klaxon.JsonObject
 import org.junit.Test
-import app.utils.KeyGenerationUtil
 
 
 class KeyGenerationTest {

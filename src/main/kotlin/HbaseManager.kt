@@ -1,17 +1,16 @@
+import org.apache.hadoop.hbase.HBaseConfiguration
 import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.Connection
-import org.apache.hadoop.hbase.client.Delete
+import org.apache.hadoop.hbase.client.ConnectionFactory
 import org.apache.hadoop.hbase.client.Get
-import org.apache.hadoop.hbase.client.Scan
-import app.utils.TableNameUtil
 import org.slf4j.LoggerFactory
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 
 open class HbaseManager { 
     private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(HbaseManager::class.java))
 
-    open fun getDataFromHbase(connection: Connection, tableName: String, formattedKey: ByteArray, family: ByteArray, column: ByteArray, timestamp: Long): ByteArray? {
-        with(connection) {
+    open fun getDataFromHbase(tableName: String, formattedKey: ByteArray, family: ByteArray, column: ByteArray, timestamp: Long): ByteArray? {
+        hbaseConnection().use  { connection ->
             with (TableName.valueOf(tableName)) {
                 if (connection.admin.tableExists(this)) {
                     connection.getTable(this).use { table ->
@@ -32,8 +31,8 @@ open class HbaseManager {
         }
     }
 
-    open fun deleteMessagesFromTopic(connection: Connection, dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, deleteEntireTable: Boolean): ByteArray? {
-        with(connection) {
+    open fun deleteMessagesFromTopic(dataFamily: ByteArray, dataQualifier: ByteArray, tableName: String, deleteEntireTable: Boolean): ByteArray? {
+        hbaseConnection().use { connection ->
             if (deleteEntireTable) {
                 logger.info("Deleting entire table", "hbase_family" to String(dataFamily),
                     "hbase_table_name" to tableName, "hbase_qualifier" to String(dataQualifier))
@@ -48,7 +47,6 @@ open class HbaseManager {
             else {
                 logger.info("Clearing table", "hbase_family" to String(dataFamily),
                     "hbase_table_name" to tableName, "hbase_qualifier" to String(dataQualifier))
-
                 with (TableName.valueOf(tableName)) {
                     if (connection.admin.tableExists(this)) {
                         connection.admin.disableTable(this)
@@ -60,4 +58,6 @@ open class HbaseManager {
         }
         return dataQualifier
     }
+
+    open fun hbaseConnection(): Connection = ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config))
 }

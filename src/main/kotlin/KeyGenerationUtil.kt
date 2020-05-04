@@ -1,16 +1,16 @@
 package app.utils
 
-import java.util.zip.CRC32
-import java.nio.ByteBuffer
-import com.beust.klaxon.Parser
 import com.beust.klaxon.JsonObject
 import com.beust.klaxon.KlaxonException
+import com.beust.klaxon.Parser
 import org.slf4j.LoggerFactory
 import uk.gov.dwp.dataworks.logging.DataworksLogger
+import java.nio.ByteBuffer
+import java.util.zip.CRC32
 
 open class KeyGenerationUtil {
     private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(KeyGenerationUtil::class.java))
-    private val alphanumeric_and_hyphens_regex = Regex("^[0-9a-fA-F-]*$")
+    private val alphanumericAndHyphensRegex = Regex("^[0-9a-fA-F-]*$")
 
     open fun generateKey(jsonString: ByteArray): ByteArray {
         val json = convertToJson(jsonString)
@@ -26,7 +26,7 @@ open class KeyGenerationUtil {
     }
 
     fun getId(bodyString: StringBuilder): JsonObject {
-        if (alphanumeric_and_hyphens_regex.matches(String(bodyString))) {
+        if (alphanumericAndHyphensRegex.matches(String(bodyString))) {
             val idObject = JsonObject()
             idObject["id"] = String(bodyString)
             logger.info("Incoming id string matched GUID and has been changed",
