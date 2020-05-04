@@ -33,7 +33,6 @@ class HbaseManagerTest {
 
         verify(adm, times(1)).disableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(1)).truncateTable(TableName.valueOf(qualifiedTableName), false)
-        verify(adm, times(1)).enableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(0)).deleteTable(TableName.valueOf(qualifiedTableName))
         verify(connection, times(0)).getTable(any())
         verify(connection, times(1)).close()
@@ -58,7 +57,6 @@ class HbaseManagerTest {
         verify(adm, times(1)).disableTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(1)).deleteTable(TableName.valueOf(qualifiedTableName))
         verify(adm, times(0)).truncateTable(TableName.valueOf(qualifiedTableName), false)
-        verify(adm, times(0)).enableTable(TableName.valueOf(qualifiedTableName))
         verify(connection, times(0)).getTable(any())
         verify(connection, times(1)).close()
     }

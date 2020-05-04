@@ -51,7 +51,6 @@ open class HbaseManager {
                     if (connection.admin.tableExists(this)) {
                         connection.admin.disableTable(this)
                         connection.admin.truncateTable(this, false)
-                        connection.admin.enableTable(this)
                     }
                 }
             }
