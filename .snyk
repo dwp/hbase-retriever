@@ -8,10 +8,18 @@ ignore:
         expires: 2020-05-20T00:00:00.000Z
   SNYK-JAVA-IONETTY-559515:
     - '*':
-        reason: we have to use the 1.5 hbase client libraries due to hbase server version
+        reason: we have to use the 1.4 hbase client libraries due to hbase server version
         expires: 2020-05-20T00:00:00.000Z
   SNYK-JAVA-IONETTY-559516:
     - '*':
-        reason: we have to use the 1.5 hbase client libraries due to hbase server version
+        reason: we have to use the 1.4 hbase client libraries due to hbase server version
+        expires: 2020-05-20T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEHADOOP-174573:
+    - '*':
+        reason: we have to use the 1.4 hbase client libraries due to hbase server version
+        expires: 2020-05-20T00:00:00.000Z
+  SNYK-JAVA-ORGAPACHEHADOOP-32047:
+    - '*':
+        reason: we have to use the 1.4 hbase client libraries due to hbase server version
         expires: 2020-05-20T00:00:00.000Z
 patch: {}

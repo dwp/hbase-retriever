@@ -17,7 +17,7 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib-jdk8"))
     implementation("com.amazonaws", "aws-lambda-java-core", "1.2.0")
-    implementation("org.apache.hbase", "hbase-client", "1.5.0")
+    implementation("org.apache.hbase", "hbase-client", "1.4.13")
     implementation("com.beust", "klaxon", "4.0.2")
     implementation("junit:junit:4.12")
     implementation("org.jetbrains.kotlin:kotlin-reflect:1.3.0")
