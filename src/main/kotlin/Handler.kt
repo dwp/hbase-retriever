@@ -1,11 +1,7 @@
+import app.utils.KeyGenerationUtil
+import app.utils.TableNameUtil
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.RequestHandler
-import org.apache.hadoop.hbase.HBaseConfiguration
-import org.apache.hadoop.hbase.TableName
-import org.apache.hadoop.hbase.client.ConnectionFactory
-import org.apache.hadoop.hbase.client.Connection
-import app.utils.TableNameUtil
-import app.utils.KeyGenerationUtil
 import org.slf4j.LoggerFactory
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 
@@ -20,15 +16,12 @@ class Handler : RequestHandler<Request, ByteArray?> {
         val keyGeneration = KeyGenerationUtil()
         val tableNameUtil = TableNameUtil()
         val hbaseManager = HbaseManager()
-        val hbaseConnection = getHbaseConnection()
-
         val family = HbaseConfig.dataFamily
         val column = HbaseConfig.dataColumn
-
-        return processRequest(hbaseConnection, input, keyGeneration, tableNameUtil, hbaseManager, family, column)
+        return processRequest(input, keyGeneration, tableNameUtil, hbaseManager, family, column)
     }
 
-    fun processRequest(connection: Connection, input: Request, keyGeneration: KeyGenerationUtil, tableNameUtil: TableNameUtil, hbaseManager: HbaseManager, family: String, column: String): ByteArray? {
+    fun processRequest(input: Request, keyGeneration: KeyGenerationUtil, tableNameUtil: TableNameUtil, hbaseManager: HbaseManager, family: String, column: String): ByteArray? {
         val timestamp = input.timestamp
         val isDeleteRequest = input.deleteRequest
         val deleteEntireTable = input.deleteEntireTableWhenInDeleteMode
@@ -41,7 +34,7 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 "hbase_column" to column, "hbase_table_name" to tableName,
                 "is_delete_entire_table" to deleteEntireTable.toString())
 
-            return hbaseManager.deleteMessagesFromTopic(connection, family.toByteArray(), column.toByteArray(), tableName, deleteEntireTable)
+            return hbaseManager.deleteMessagesFromTopic(family.toByteArray(), column.toByteArray(), tableName, deleteEntireTable)
         } 
         else {
             val formattedKey = keyGeneration.generateKey(key.toByteArray())
@@ -51,11 +44,8 @@ class Handler : RequestHandler<Request, ByteArray?> {
                 "hbase_family" to family, "hbase_column" to column,
                 "hbase_table_name" to tableName, "hbase_timestamp" to timestamp.toString())
 
-            return hbaseManager.getDataFromHbase(connection, tableName, formattedKey, family.toByteArray(), column.toByteArray(), timestamp)
+            return hbaseManager.getDataFromHbase(tableName, formattedKey, family.toByteArray(), column.toByteArray(), timestamp)
         }
     }
 
-    fun getHbaseConnection(): Connection {
-        return ConnectionFactory.createConnection(HBaseConfiguration.create(HbaseConfig.config))
-    }
 }
