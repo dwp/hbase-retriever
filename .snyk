@@ -22,4 +22,8 @@ ignore:
     - '*':
         reason: we have to use the 1.4 hbase client libraries due to hbase server version
         expires: 2020-07-20T00:00:00.000Z
+  SNYK-JAVA-LOG4J-572732:
+    - '*':
+        reason: we have to use the 1.4 hbase client libraries due to hbase server version
+        expires: 2020-07-20T00:00:00.000Z
 patch: {}
