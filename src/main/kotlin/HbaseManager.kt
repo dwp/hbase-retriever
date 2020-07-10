@@ -3,6 +3,7 @@ import org.apache.hadoop.hbase.TableName
 import org.apache.hadoop.hbase.client.Connection
 import org.apache.hadoop.hbase.client.ConnectionFactory
 import org.apache.hadoop.hbase.client.Get
+import org.apache.hadoop.hbase.client.Consistency
 import org.slf4j.LoggerFactory
 import uk.gov.dwp.dataworks.logging.DataworksLogger
 
@@ -19,6 +20,8 @@ open class HbaseManager {
                                 setTimeStamp(timestamp)
                             }
                             addColumn(family, column)
+                            setConsistency(Consistency.TIMELINE)
+                            setReplicaId(1)
                         })
                         return result.getValue(family, column)
                     }
