@@ -21,7 +21,6 @@ open class HbaseManager {
                             }
                             addColumn(family, column)
                             setConsistency(Consistency.TIMELINE)
-                            setReplicaId(1)
                         })
                         return result.getValue(family, column)
                     }
