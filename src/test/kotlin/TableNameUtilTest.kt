@@ -57,7 +57,7 @@ class TableNameUtilTest {
     }
 
     private fun assertValidTopicNameIsAMatch(prefix: String, database: String, collection: String) {
-        val allChars = "$database.$collection"
+        var allChars = "$database.$collection"
         if (prefix != "") {
             allChars = "$prefix$allChars"
         }
