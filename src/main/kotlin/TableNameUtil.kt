@@ -5,7 +5,7 @@ import uk.gov.dwp.dataworks.logging.DataworksLogger
 
 open class TableNameUtil {
     private val logger: DataworksLogger = DataworksLogger(LoggerFactory.getLogger(TableNameUtil::class.java))
-    private val regexPattern = """^[\w+\.]([-\w]+)\.([-\w]+)$"""
+    private val regexPattern = """^(?:\w*\.)?([-\w]+)\.([-\w]+)$"""
     private val qualifiedTablePattern = Regex(regexPattern)
 
     fun topicNameTableMatcher(topicName: String) = qualifiedTablePattern.find(topicName)
