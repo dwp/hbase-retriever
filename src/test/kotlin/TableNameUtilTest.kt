@@ -53,7 +53,7 @@ class TableNameUtilTest {
         val exception = shouldThrow<Exception> {
             TableNameUtil().getQualifiedTableName("db.prefix.database.collection")
         }
-        exception.message shouldBe "Could not parse table name from topic: 'database.collection'"
+        exception.message shouldBe "Could not parse table name from topic: 'db.prefix.database.collection'"
     }
 
     private fun assertValidTopicNameIsAMatch(prefix: String, database: String, collection: String) {
