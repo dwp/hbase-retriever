@@ -9,22 +9,27 @@ class TableNameUtilTest {
 
     @Test
     fun ensureAllCharactersIsAValidTopicName() {
-        assertValidTopicNameIsAMatch("database","collection")
+        assertValidTopicNameIsAMatch("db.", "database","collection")
     }
 
     @Test
     fun ensureAlphaNumericIsAValidTopicName() {
-        assertValidTopicNameIsAMatch("database1","collection1")
+        assertValidTopicNameIsAMatch("db.", "database1","collection1")
     }
 
     @Test
     fun ensureAlphanumericWithHyphensIsAValidTopicName() {
-        assertValidTopicNameIsAMatch("database-1","collection-1")
+        assertValidTopicNameIsAMatch("db.", "database-1","collection-1")
     }
 
     @Test
     fun ensureAlphamunericWithUnderscoresIsAValidTopicName() {
-        assertValidTopicNameIsAMatch("database_1","collection_1")
+        assertValidTopicNameIsAMatch("db.", "database_1","collection_1")
+    }
+
+    @Test
+    fun ensureNoPrefixIsAValidTopicName() {
+        assertValidTopicNameIsAMatch("", "database_1","collection_1")
     }
 
     @Test
@@ -46,13 +51,17 @@ class TableNameUtilTest {
     @Test
     fun ensureExceptionIsThrownWithInvalidTopicName() {
         val exception = shouldThrow<Exception> {
-            TableNameUtil().getQualifiedTableName("database.collection")
+            TableNameUtil().getQualifiedTableName("db.prefix.database.collection")
         }
-        exception.message shouldBe "Could not parse table name from topic: 'database.collection'"
+        exception.message shouldBe "Could not parse table name from topic: 'db.prefix.database.collection'"
     }
 
-    private fun assertValidTopicNameIsAMatch(database: String, collection: String) {
-        val allChars = "ab.$database.$collection"
+    private fun assertValidTopicNameIsAMatch(prefix: String, database: String, collection: String) {
+        var allChars = "$database.$collection"
+        if (prefix != "") {
+            allChars = "$prefix$allChars"
+        }
+        
         val matcher = TableNameUtil().topicNameTableMatcher(allChars)
         matcher shouldNotBe null
         if (matcher != null) {
