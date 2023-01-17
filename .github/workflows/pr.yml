@@ -1,23 +1,22 @@
-name: PR Prettier for JS Code
-
+# This action works with pull requests and pushes
 on:
   pull_request:
     paths-ignore:
       - '.github/workflows/**'
 
 jobs:
-  cleanup_tasks:
+  prettier:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Cloning the repository
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 1
-    - name: Prettify the Java Code
-      uses: lwerner-lshigh/prettier_action_java@v1.1.1
-      with:
-        prettier_options: '--no-semi --write *.java'
-        branch: ${{ github.head_ref }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          # Make sure the actual branch is checked out when running on pull requests
+          ref: ${{ github.head_ref }}
+
+      - name: Prettify code
+        uses: creyD/prettier_action@v4.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
