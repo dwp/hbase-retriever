@@ -74,7 +74,7 @@ jobs:
           sed -i -e "s/version = \"0.0.0\"/version = \"$VERSION\"/" build.gradle.kts
 
           mkdir artifacts
-          gradlew build --stacktrace
+          gradle build --stacktrace
           cp build/libs/HbaseRetriever*-uber.jar artifacts/
       
       - name: Create Release
