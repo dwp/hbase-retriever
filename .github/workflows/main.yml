@@ -61,6 +61,8 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 5.5.1
 
       - name: Build
         run: |
@@ -74,7 +76,7 @@ jobs:
           sed -i -e "s/version = \"0.0.0\"/version = \"$VERSION\"/" build.gradle.kts
 
           mkdir artifacts
-          gradlew build --stacktrace
+          gradle build --stacktrace
           cp build/libs/HbaseRetriever*-uber.jar artifacts/
       
       - name: Create Release
