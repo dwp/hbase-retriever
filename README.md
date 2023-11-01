@@ -1,3 +1,5 @@
+# DO NOT USE THIS REPO - MIGRATED TO GITLAB
+
 # hbase-retriever
 
 A simple Lambda to allow clients to retrieve values from Hbase in EMR that
